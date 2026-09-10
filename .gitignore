@@ -1,0 +1,29 @@
+# ASP.NET Core
+server/**/bin/
+server/**/obj/
+server/**/appsettings.Development.json
+server/**/appsettings.Production.json
+
+# User secrets
+server/**/*.user
+
+# Frontend
+client/node_modules/
+client/dist/
+client/.env
+client/.env.local
+
+# IDE
+.vs/
+.vscode/
+*.suo
+*.user
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*

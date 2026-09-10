@@ -1,0 +1,167 @@
+#branchSearchOverlay {
+    position: fixed;
+    z-index: 100;
+    left: 0;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(2px);
+}
+
+#branchSearchModal {
+    position: fixed;
+    z-index: 101;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 480px;
+    background: #fff;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    max-height: 80vh;
+}
+
+#branchSearchHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 16px;
+    background: #1a2744;
+    flex-shrink: 0;
+}
+
+#branchSearchTitle {
+    font-family: Work Sans !important;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+#branchSearchClose {
+    color: rgba(255,255,255,0.6);
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    transition: color 150ms, background-color 150ms;
+}
+
+#branchSearchClose:hover {
+    color: #fff;
+    background-color: rgba(255,255,255,0.15);
+}
+
+#branchSearchBody {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    flex: 1;
+}
+
+#branchCurrentInfo {
+    padding: 12px 16px;
+    border-bottom: 1px solid #e2e8f0;
+    background: #f7fafc;
+    flex-shrink: 0;
+}
+
+#branchCurrentLabel {
+    font-family: Work Sans !important;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #718096;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 6px;
+}
+
+#branchSearchInputRow {
+    padding: 12px 16px;
+    border-bottom: 1px solid #e2e8f0;
+    flex-shrink: 0;
+}
+
+#branchSearchInput {
+    width: 100%;
+    font-family: Work Sans !important;
+    font-size: 0.875rem;
+    color: #1a202c;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    padding: 8px 12px;
+    box-sizing: border-box;
+    transition: border-color 150ms;
+}
+
+#branchSearchInput:hover { border-color: #a0aec0; }
+#branchSearchInput:focus {
+    outline: none;
+    border-color: #0d478e;
+    box-shadow: 0 0 0 2px rgba(13,71,142,0.15);
+}
+
+#branchSearchResults {
+    overflow-y: auto;
+    flex: 1;
+}
+
+.branchResultItem {
+    padding: 10px 16px;
+    border-bottom: 1px solid #f0f0f0;
+    cursor: pointer;
+    transition: background-color 150ms;
+}
+
+.branchResultItem:hover { background-color: #f7fafc; }
+.branchResultItem:last-child { border-bottom: none; }
+
+.branchResultCurrent {
+    cursor: default;
+    background: #ebf8ff;
+    border-left: 3px solid #0d478e;
+}
+
+.branchResultCurrent:hover { background: #ebf8ff; }
+
+.branchResultCode {
+    font-family: Work Sans !important;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #0d478e;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.branchResultName {
+    font-family: Work Sans !important;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #1a202c;
+}
+
+.branchResultAddress {
+    font-family: Work Sans !important;
+    font-size: 0.75rem;
+    color: #718096;
+}
+
+.branchResultPhone {
+    font-family: Work Sans !important;
+    font-size: 0.75rem;
+    color: #a0aec0;
+}
+
+.branchSearchEmpty {
+    font-family: Work Sans !important;
+    font-size: 0.875rem;
+    color: #a0aec0;
+    text-align: center;
+    padding: 24px 16px;
+}

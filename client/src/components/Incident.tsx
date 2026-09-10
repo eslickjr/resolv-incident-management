@@ -1,7 +1,12 @@
-
-
-import { useState, useEffect, FocusEvent, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useMsal } from '@azure/msal-react';
+import { useBlocker, useNavigate } from 'react-router-dom';
 import Confirm from './Confirm';
+import Notes, { NotesRef } from './Notes';
+import BranchSearchModal from './BranchSearchModal';
+import { createIncident, updateIncident, getOpenIncidentBySSN, addNote } from '../api/incidents';
+import { getIssues, getSolutionsForIssue, getCallTipsForIssue } from '../api/issueCache';
+import { BranchResult } from '../api/branches.ts';
 
 import '../styles/Incident.css';
 
@@ -11,610 +16,444 @@ interface BarBooleanI {
     textIn: boolean;
 }
 
-const Incident = () => {
+interface IncidentProps {
+    incidentId?: number;
+    initialBranch?: string;
+    initialAccount?: string;
+    initialPhone?: string;
+    initialSSN?: string;
+    initialFirstName?: string;
+    initialLastName?: string;
+    initialIssue?: string;
+    initialSolution?: string;
+    initialAdditionalDetails?: string;
+    isReadOnly?: boolean;
+}
+
+const formatPhone = (val: string): string => {
+    const digits = val.replace(/\D/g, '');
+    if (!digits) return '';
+    let formatted = '(' + digits.substring(0, 3);
+    if (digits.length >= 4) formatted += ') ' + digits.substring(3, 6);
+    if (digits.length >= 7) formatted += '-' + digits.substring(6, 10);
+    return formatted;
+};
+
+const formatSSN = (val: string): string => {
+    const digits = val.replace(/\D/g, '');
+    if (!digits) return '';
+    let formatted = digits.substring(0, 3);
+    if (digits.length >= 4) formatted += '-' + digits.substring(3, 5);
+    if (digits.length >= 6) formatted += '-' + digits.substring(5, 9);
+    return formatted;
+};
+
+const maskSSN = (val: string): string => {
+    const digits = val.replace(/\D/g, '');
+    if (digits.length !== 9) return val;
+    return `***-**-${digits.slice(5)}`;
+};
+
+const Incident: React.FC<IncidentProps> = ({
+    incidentId,
+    initialBranch = '',
+    initialAccount = '',
+    initialPhone = '',
+    initialSSN = '',
+    initialFirstName = '',
+    initialLastName = '',
+    initialIssue = '',
+    initialSolution = '',
+    initialAdditionalDetails = '',
+    isReadOnly = false
+}) => {
+    const { instance } = useMsal();
+    const navigate = useNavigate();
+
     const issueRef = useRef<string>('');
     const solutionRef = useRef<string>('');
-    const [issue, setIssue] = useState<string>('');
-    const [solution, setSolution] = useState<string>('');
-    const spanHeight = useRef<number>(0);
     const barBoolean = useRef<BarBooleanI[]>([]);
+    const notesRef = useRef<NotesRef>(null);
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+    const [modalMode, setModalMode] = useState<'update' | 'close'>('close');
     const errors = useRef<number>(0);
-    const [branch, setBranch] = useState<string>('');
-    const [phone, setPhone] = useState<string>('');
-    const [ssn, setSSN] = useState<string>('');
-    const [firstName, setFirstName] = useState<string>('');
-    const [lastName, setLastName] = useState<string>('');
-    const [additionalDetails, setAdditionalDetails] = useState<string>('');
+    const [branchModalOpen, setBranchModalOpen] = useState<boolean>(false);
+    const [_cachedBranch, setCachedBranch] = useState<BranchResult | null>(null);
 
-    const[branchSpan, setBranchSpan] = useState<string>('');
-    const[phoneSpan, setPhoneSpan] = useState<string>('');
-    const[ssnSpan, setSSNSpan] = useState<string>('');
-    const[firstNameSpan, setFirstNameSpan] = useState<string>('');
-    const[lastNameSpan, setLastNameSpan] = useState<string>('');
-    const[issueSpan, setIssueSpan] = useState<string>('');
-    const[solutionSpan, setSolutionSpan] = useState<string>('');
-    const[closeSpan, setCloseSpan] = useState<string>('');
+    const [branch, setBranch] = useState<string>(initialBranch);
+    const [phone, setPhone] = useState<string>(formatPhone(initialPhone));
+    const [ssn, setSSN] = useState<string>(formatSSN(initialSSN));
+    const [showSSN, setShowSSN] = useState<boolean>(false);
+    const [firstName, setFirstName] = useState<string>(initialFirstName.trim());
+    const [lastName, setLastName] = useState<string>(initialLastName.trim());
+    const [issue, setIssue] = useState<string>(initialIssue);
+    const [solution, setSolution] = useState<string>(initialSolution);
+    const [additionalDetails, setAdditionalDetails] = useState<string>(initialAdditionalDetails);
+    const [noteText, setNoteText] = useState<string>('');
+    const [showTips, setShowTips] = useState<boolean>(false);
+    const [tipsExpanded, setTipsExpanded] = useState<boolean>(true);
 
+    const [branchSpan, setBranchSpan] = useState<string>('');
+    const [phoneSpan, setPhoneSpan] = useState<string>('');
+    const [ssnSpan, setSSNSpan] = useState<string>('');
+    const [firstNameSpan, setFirstNameSpan] = useState<string>('');
+    const [lastNameSpan, setLastNameSpan] = useState<string>('');
+    const [issueSpan, setIssueSpan] = useState<string>('');
+    const [solutionSpan, setSolutionSpan] = useState<string>('');
+    const [closeSpan, setCloseSpan] = useState<string>('');
+
+    // ── Timer ─────────────────────────────────────────────────────────────────
+    const timerStart = useRef<number>(Date.now());
+    const getElapsedSeconds = () => Math.floor((Date.now() - timerStart.current) / 1000);
+
+    // ── Navigation guard ──────────────────────────────────────────────────────
     useEffect(() => {
-        const bars = document.getElementsByClassName('incBar');
-        const spans = document.getElementsByClassName('incSpan');
-        const errorSpans = document.getElementsByClassName('errorSpan');
-        spanHeight.current = (spans[0] as HTMLElement).offsetHeight;
-
-        const mutationObservers: MutationObserver[] = [];
-
-        for (let i = 0; i < bars.length; i++) {
-            const bar = bars[i] as HTMLElement;
-            const span = spans[i] as HTMLElement;
-            const errorSpan = errorSpans[i] as HTMLElement;
-
-            barBoolean.current.push({
-                mouseIn: false,
-                focused: false,
-                textIn: false
-            });
-            bar.setAttribute('key', i.toString());
-            const rect = bar.getBoundingClientRect();
-
-            bar.addEventListener('mouseenter', () => {
-                barBoolean.current[i].mouseIn = true;
-
-                span.style.setProperty('transition', 'none');
-                if (barBoolean.current[i].focused) {
-                    span.style.setProperty('color', '#367bd0');
-                } else {
-                    if (bar.id !== 'incSolBar' && barBoolean.current[i].textIn) span.style.setProperty('color', '#000');
-                    if (bar.id === 'incSolBar' && issueRef.current !== '') {
-                        span.style.setProperty('color', '#000');
-                        bar.style.setProperty('border-color', '#000');
-                    }
-                }
-            });
-
-            bar.addEventListener('mouseleave', () => {
-                barBoolean.current[i].mouseIn = false;
-
-                span.style.setProperty('transition', 'none');
-                if (!barBoolean.current[i].focused) {
-                    span.style.setProperty('color', '#cacaca');
-                    if (bar.id === 'incSolBar') {
-                        bar.style.setProperty('border-color', '#cacaca');
-                    }
-                }
-            });
-
-            if (bar.id !== 'incIssueBar' && bar.id !== 'incSolBar') {
-                if (bar.id === 'incADBar') {
-                    span.style.setProperty('top', `${rect.top + ((rect.height / 3 / 2) - (spanHeight.current / 2) + 1) + window.scrollY}px`);
-                } else {
-                    span.style.setProperty('top', `${rect.top + ((rect.height / 2) - (spanHeight.current / 2) - 3) + window.scrollY}px`);
-                }
-                span.style.setProperty('left', `${rect.left + 10}px`);
-                span.style.setProperty('font-size', '16px');
-            } else {
-                span.style.setProperty('top', `${rect.top - (spanHeight.current / 2) + 2}px`);
-                span.style.setProperty('left', `${rect.left + 10}px`);
-                span.style.setProperty('font-size', '12px');
-            }
-
-            const updatePosition = () => {
-                const newRect = bar.getBoundingClientRect();
-                if (bar.id !== 'incIssueBar' && bar.id !== 'incSolBar') {
-                    if (barBoolean.current[i].focused || barBoolean.current[i].textIn) {
-                        span.style.setProperty('top', `${newRect.top - (spanHeight.current / 2) + 2 + window.scrollY}px`);
-                        span.style.setProperty('left', `${newRect.left + 10 + window.scrollX}px`);
-                    } else {
-                        if (bar.id === 'incADBar') {
-                            span.style.setProperty('top', `${newRect.top + ((newRect.height / 3 / 2) - (spanHeight.current / 2) + 1) + window.scrollY}px`);
-                        } else {
-                            span.style.setProperty('top', `${newRect.top + ((newRect.height / 2) - (spanHeight.current / 2) - 3) + window.scrollY}px`);
-                        }
-                    }
-                } else {
-                    span.style.setProperty('top', `${newRect.top - (spanHeight.current / 2) + 2}px`);
-                }
-                span.style.setProperty('left', `${newRect.left + 10}px`);
-            }
-
-
-            const mutationObserver = new MutationObserver(() => setTimeout(updatePosition, 0));
-
-            mutationObserver.observe(errorSpan, { childList: true, subtree: true, attributes: true});
-
-            mutationObservers.push(mutationObserver);
-        }
-
-        document.body.addEventListener('scroll', handleScroll);
-        window.addEventListener('resize', handleScroll);
-
-        return () => {
-            for (let i = 0; i < bars.length; i++) {
-                const bar = bars[i] as HTMLElement;
-                bar.removeEventListener('mouseenter', () => {});
-                bar.removeEventListener('mouseleave', () => {});
-            }
-
-            document.body.removeEventListener('scroll', handleScroll);
-            window.removeEventListener('resize', handleScroll);
-
-            mutationObservers.forEach((mutationObserver) => {
-                mutationObserver.disconnect();
-            });
-        };
-    }
-    , []);
-
-    useEffect(() => {
-        const form = document.getElementById('incForm') as HTMLElement;
-
-        const updateForm = () => {
-            const bars = document.getElementsByClassName('incBar');
-            const spans = document.getElementsByClassName('incSpan');
-
-            for (let i = 0; i < bars.length; i++) {
-                const bar = bars[i] as HTMLElement;
-                const span = spans[i] as HTMLElement;
-                const newRect = bar.getBoundingClientRect();
-                if (bar.id !== 'incIssueBar' && bar.id !== 'incSolBar') {
-                    if (barBoolean.current[i].focused || barBoolean.current[i].textIn) {
-                        span.style.setProperty('top', `${newRect.top - (spanHeight.current / 2) + 2 + window.scrollY}px`);
-                        span.style.setProperty('left', `${newRect.left + 10 + window.scrollX}px`);
-                    } else {
-                        if (bar.id === 'incADBar') {
-                            span.style.setProperty('top', `${newRect.top + ((newRect.height / 3 / 2) - (spanHeight.current / 2) + 1) + window.scrollY}px`);
-                        } else {
-                            span.style.setProperty('top', `${newRect.top + ((newRect.height / 2) - (spanHeight.current / 2) - 3) + window.scrollY}px`);
-                        }
-                    }
-                } else {
-                    span.style.setProperty('top', `${newRect.top - (spanHeight.current / 2) + 2}px`);
-                }
-                span.style.setProperty('left', `${newRect.left + 10}px`);
+        const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+            e.preventDefault();
+            e.returnValue = '';
+            if (incidentId) {
+                const payload = JSON.stringify({ timeSpentSeconds: getElapsedSeconds(), isClosing: false });
+                const blob = new Blob([payload], { type: 'application/json' });
+                navigator.sendBeacon(`/api/incidents/${incidentId}/beacon`, blob);
             }
         };
+        window.addEventListener('beforeunload', handleBeforeUnload);
+        return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    }, [incidentId]);
 
-        const resizeObserver = new ResizeObserver(updateForm);
+    // ── Pre-populate from props ───────────────────────────────────────────────
+    useEffect(() => {
+        setBranch(initialBranch);
+        setPhone(formatPhone(initialPhone));
+        setSSN(formatSSN(initialSSN));
+        setFirstName(initialFirstName.trim());
+        setLastName(initialLastName.trim());
+        setIssue(initialIssue);
+        setSolution(initialSolution);
+        setAdditionalDetails(initialAdditionalDetails);
+        issueRef.current = initialIssue;
+        solutionRef.current = initialSolution;
+        setShowTips(initialIssue !== '');
+    }, [initialBranch, initialPhone, initialSSN, initialFirstName, initialLastName, initialIssue, initialSolution, initialAdditionalDetails]);
 
-        resizeObserver.observe(form);
-
-        return () => {
-            resizeObserver.disconnect();
-        }
-    }, []);
-
-    const handleScroll = () => {
-        const bars = document.getElementsByClassName('incBar');
-        const spans = document.getElementsByClassName('incSpan');
-
-        for (let i = 0; i < bars.length; i++) {
-            const bar = bars[i] as HTMLElement;
-            const span = spans[i] as HTMLElement;
-            const rect = bar.getBoundingClientRect();
-
-            span.style.setProperty('transition', 'none');
-            if (bar.id !== 'incIssueBar' && bar.id !== 'incSolBar') {
-                if (barBoolean.current[i].focused || barBoolean.current[i].textIn) {
-                    span.style.setProperty('top', `${rect.top - (spanHeight.current / 2) + 2 + window.scrollY}px`);
-                    span.style.setProperty('left', `${rect.left + 10 + window.scrollX}px`);
-                } else {
-                    if (bar.id === 'incADBar') {
-                        span.style.setProperty('top', `${rect.top + ((rect.height / 3 / 2) - (spanHeight.current / 2) + 1) + window.scrollY}px`);
-                    } else {
-                        span.style.setProperty('top', `${rect.top + ((rect.height / 2) - (spanHeight.current / 2) - 3) + window.scrollY}px`);
-                    }
-                    span.style.setProperty('left', `${rect.left + 10 + window.scrollX}px`);
-                }
-            } else {
-                span.style.setProperty('top', `${rect.top - (spanHeight.current / 2) + 2 + window.scrollY}px`);
-                span.style.setProperty('left', `${rect.left + 10 + window.scrollX}px`);
+    // ── Beacon for time tracking ─────────────────────────────────────────────
+    useEffect(() => {
+        const handleSaveTime = async () => {
+            if (!incidentId) return;
+            try {
+                const blob = new Blob([JSON.stringify({ timeSpentSeconds: getElapsedSeconds(), isClosing: false })], { type: 'application/json' });
+                navigator.sendBeacon(`/api/incidents/${incidentId}/beacon`, blob);
+            } catch (err) {
+                console.error('Failed to save time:', err);
             }
+        };
+        window.addEventListener('saveIncidentTime', handleSaveTime);
+        return () => window.removeEventListener('saveIncidentTime', handleSaveTime);
+    }, [incidentId]);
+
+    const blocker = useBlocker(({ historyAction }) =>
+        historyAction === 'POP' && !isReadOnly
+    );
+
+    const saveTime = async () => {
+        if (!incidentId) return;
+        try {
+            await updateIncident(instance, incidentId, {
+                timeSpentSeconds: getElapsedSeconds(),
+                isClosing: false
+            });
+        } catch (err) {
+            console.error('Failed to save time:', err);
         }
-        return;
     };
 
-    const handleBranch = (branch: string) => {
-        branch = branch.replace(/[^0-9]/g, '');
+    const handleNewIncident = async () => {
+        setIssue('');
+        setSolution('');
+        setAdditionalDetails('');
+        issueRef.current = '';
+        solutionRef.current = '';
 
-        if (branchSpan === 'Branch is required') {
-            if (branch !== '') {
-                setBranchSpan('');
-                errors.current -= 1;
-                if (errors.current === 0) {
-                    setCloseSpan('');
+        if (ssn) {
+            const rawSSN = ssn.replace(/\D/g, '');
+            const openIncident = await getOpenIncidentBySSN(instance, rawSSN);
+            if (openIncident) {
+                if (initialAccount && branch) {
+                    navigate(`/customerAccount/${openIncident.incidentId}/${branch}/${initialAccount}`);
+                } else {
+                    navigate(`/noAccount/${openIncident.incidentId}`);
                 }
+                return;
             }
         }
 
-        if (branchSpan === 'Branch must be at least 2 digits') {
-            if (branch.length >= 2) {
-                setBranchSpan('');
-                errors.current -= 1;
-                if (errors.current === 0) {
-                    setCloseSpan('');
-                }
+        const newIncident = await createIncident(instance, {
+            firstName, lastName, ssn, phone, branch, account: initialAccount
+        });
+
+        if (newIncident) {
+            if (initialAccount && branch) {
+                navigate(`/customerAccount/${newIncident.incidentId}/${branch}/${initialAccount}`);
+            } else {
+                navigate(`/noAccount/${newIncident.incidentId}`);
             }
         }
+    };
 
-        return branch.slice(0, 4);
-    }
+    const handleBranch = (val: string) => {
+        val = val.replace(/[^0-9]/g, '');
+        if (branchSpan === 'Branch is required' && val !== '') { setBranchSpan(''); errors.current -= 1; if (errors.current === 0) setCloseSpan(''); }
+        if (branchSpan === 'Branch must be at least 2 digits' && val.length >= 2) { setBranchSpan(''); errors.current -= 1; if (errors.current === 0) setCloseSpan(''); }
+        return val.slice(0, 4);
+    };
 
-    const handlePhone = (phone: string) => {
-        phone = phone.replace(/[^0-9]/g, '');
-        if (phone.length > 0) {
-            phone = '(' + phone;
-        }
+    const handlePhone = (val: string) => {
+        val = val.replace(/[^0-9]/g, '');
+        if (val.length > 0) val = '(' + val;
+        if (val.length > 4) val = val.slice(0, 4) + ') ' + val.slice(4);
+        if (val.length > 9) val = val.slice(0, 9) + '-' + val.slice(9, 13);
+        if (phoneSpan === 'Phone is required' && val !== '') { setPhoneSpan(''); errors.current -= 1; if (errors.current === 0) setCloseSpan(''); }
+        if (phoneSpan === 'Phone must be 10 digits' && val.length === 14) { setPhoneSpan(''); errors.current -= 1; if (errors.current === 0) setCloseSpan(''); }
+        return val;
+    };
 
-        if (phone.length > 4) {
-            phone = phone.slice(0, 4) + ') ' + phone.slice(4);
-        }
-
-        if (phone.length > 9) {
-            phone = phone.slice(0, 9) + '-' + phone.slice(9, 13);
-        }
-
-        if (phoneSpan === 'Phone is required') {
-            if (phone !== '') {
-                setPhoneSpan('');
-                errors.current -= 1;
-                if (errors.current === 0) {
-                    setCloseSpan('');
-                }
-            }
-        }
-
-        if (phoneSpan === 'Phone must be 10 digits') {
-            if (phone.length === 14) {
-                setPhoneSpan('');
-                errors.current -= 1;
-                if (errors.current === 0) {
-                    setCloseSpan('');
-                }
-            }
-        }
-
-        return phone;
-    }
-
-    const handleSSN = (ssn: string) => {
-        ssn = ssn.replace(/[^0-9\s]/g, '');
-        let formattedSearch = ssn.slice(0, 3);
-
-        if (ssn.length > 3) {
-            formattedSearch += '-' + ssn.slice(3, 5);
-        }
-
-        if (ssn.length > 5) {
-            formattedSearch += '-' + ssn.slice(5, 9);
-        }
-
-        if (ssnSpan === 'SSN is required') {
-            if (formattedSearch !== '') {
-                setSSNSpan('');
-                errors.current -= 1;
-                if (errors.current === 0) {
-                    setCloseSpan('');
-                }
-            }
-        }
-
-        if (ssnSpan === 'SSN must be 9 digits') {
-            if (formattedSearch.length === 11) {
-                setSSNSpan('');
-                errors.current -= 1;
-                if (errors.current === 0) {
-                    setCloseSpan('');
-                }
-            }
-        }
-
-        return formattedSearch;
-    }
+    const handleSSN = (val: string) => {
+        val = val.replace(/[^0-9]/g, '');
+        let formatted = val.slice(0, 3);
+        if (val.length > 3) formatted += '-' + val.slice(3, 5);
+        if (val.length > 5) formatted += '-' + val.slice(5, 9);
+        if (ssnSpan === 'SSN is required' && formatted !== '') { setSSNSpan(''); errors.current -= 1; if (errors.current === 0) setCloseSpan(''); }
+        if (ssnSpan === 'SSN must be 9 digits' && formatted.length === 11) { setSSNSpan(''); errors.current -= 1; if (errors.current === 0) setCloseSpan(''); }
+        return formatted;
+    };
 
     const handleIncChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const bar = e.target.parentElement as HTMLElement;
-
-        if (e.target.id === 'incBranch') {
-            setBranch(handleBranch(e.target.value));
-        }
-
-        if (e.target.id === 'incPhone') {
-            setPhone(handlePhone(e.target.value));
-        }
-
-        if (e.target.id === 'incSSN') {
-            setSSN(handleSSN(e.target.value));
-        }
-
+        if (e.target.id === 'incBranch') setBranch(handleBranch(e.target.value));
+        if (e.target.id === 'incPhone') setPhone(handlePhone(e.target.value));
+        if (e.target.id === 'incSSN') setSSN(handleSSN(e.target.value));
         if (e.target.id === 'incFN' || e.target.id === 'incLN') {
             e.target.value = e.target.value.replace(/[^a-zA-Z]/g, '');
-
             if (e.target.id === 'incFN') {
                 setFirstName(e.target.value);
-                if (firstNameSpan !== '') {
-                    if (e.target.value !== '') {
-                        setFirstNameSpan('');
-                        errors.current -= 1;
-                        if (errors.current === 0) {
-                            setCloseSpan('');
-                        }
-                    }
-                }
+                if (firstNameSpan !== '' && e.target.value !== '') { setFirstNameSpan(''); errors.current -= 1; if (errors.current === 0) setCloseSpan(''); }
             } else {
                 setLastName(e.target.value);
-                if (lastNameSpan !== '') {
-                    if (e.target.value !== '') {
-                        setLastNameSpan('');
-                        errors.current -= 1;
-                        if (errors.current === 0) {
-                            setCloseSpan('');
-                        }
-                    }
-                }
+                if (lastNameSpan !== '' && e.target.value !== '') { setLastNameSpan(''); errors.current -= 1; if (errors.current === 0) setCloseSpan(''); }
             }
         }
-
-        if (e.target.id === 'incAD') {
-            setAdditionalDetails(e.target.value);
-        }
-
+        if (e.target.id === 'incAD') setAdditionalDetails(e.target.value);
         const key = bar.getAttribute('key');
-        if (key !== null) {
-            if (e.target.value === '') {
-                barBoolean.current[parseInt(key)].textIn = false;
-            } else {
-                barBoolean.current[parseInt(key)].textIn = true;
-            }
-        }
-    }
-
-    const handleIncFocus = (e: FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-        const bar = e.target.parentElement as HTMLElement;
-        const span = (bar.nextElementSibling as HTMLElement);
-        const rect = bar.getBoundingClientRect();
-        if (bar.id === 'incIssueBar' || bar.id === 'incSolBar') {
-        }
-
-        const key = bar.getAttribute('key');
-        if (key !== null) {
-            barBoolean.current[parseInt(key)].focused = true;
-            if (bar.id !== 'incIssueBar' && bar.id !== 'incSolBar') {
-                if (!barBoolean.current[parseInt(key)].textIn) {
-                    span.style.setProperty('transition', 'all 0.4s');
-                } else {
-                    span.style.setProperty('transition', 'none');
-                }
-            }
-        }
-
-        span.style.setProperty('top', `${rect.top - (spanHeight.current / 2) + 2}px`);
-        span.style.setProperty('font-size', '12px');
-        //if (issue !== '' && e.target.id === 'incSol') {
-            span.style.setProperty('color', '#367bd0');
-        //}
-    }
-
-    const handleIncBlur = (e: FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-        const bar = e.target.parentElement as HTMLElement;
-        const span = bar.nextElementSibling as HTMLElement;
-
-        const key = bar.getAttribute('key');
-        if (key !== null) {
-            barBoolean.current[parseInt(key)].focused = false;
-        }
-
-        span.style.setProperty('color', '#cacaca');
-        if (bar.id === 'incSolBar') {
-            bar.style.setProperty('border-color', '#cacaca');
-        }
-
-        if (bar.id !== 'incIssueBar' && bar.id !== 'incSolBar') {
-            if (e.target.value === '') {
-                const rect = bar.getBoundingClientRect();
-
-                span.style.setProperty('transition', 'all 0.4s');
-                if (bar.id === 'incADBar') {
-                    span.style.setProperty('top', `${rect.top + ((rect.height / 3 / 2) - (spanHeight.current / 2) + 1) + window.scrollY}px`);
-                } else {
-                    span.style.setProperty('top', `${rect.top + ((rect.height / 2) - (spanHeight.current / 2) - 3) + window.scrollY}px`);
-                }
-                span.style.setProperty('font-size', '16px');
-            }
-        }
-    }
+        if (key !== null) barBoolean.current[parseInt(key)].textIn = e.target.value !== '';
+    };
 
     const handleIssueChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        if (issueSpan !== '') {
-            if (e.target.value !== '') {
-                setIssueSpan('');
-                errors.current -= 1;
-                if (errors.current === 0) {
-                    setCloseSpan('');
-                }
-            }
-        }
-
+        if (issueSpan !== '' && e.target.value !== '') { setIssueSpan(''); errors.current -= 1; if (errors.current === 0) setCloseSpan(''); }
         issueRef.current = e.target.value;
         setIssue(e.target.value);
-    }
+        setShowTips(e.target.value !== '');
+    };
 
     const handleSolutionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-
-        if (solutionSpan !== '') {
-            if (e.target.value !== '') {
-                setSolutionSpan('');
-                errors.current -= 1;
-                if (errors.current === 0) {
-                    setCloseSpan('');
-                }
-            }
-        }
-
+        if (solutionSpan !== '' && e.target.value !== '') { setSolutionSpan(''); errors.current -= 1; if (errors.current === 0) setCloseSpan(''); }
         solutionRef.current = e.target.value;
         setSolution(e.target.value);
-    }
+        setTipsExpanded(true);
+    };
 
-    const openModal = () => {
-        if (branch === '' && branchSpan === '') {
-            setBranchSpan('Branch is required');
-            errors.current += 1;
-        } else if (branch.length < 2 && branchSpan === '') {
-            setBranchSpan('Branch must be at least 2 digits');
-            errors.current += 1;
-        } else {
-            setBranchSpan('');
-        }
+    const validate = (requireSolution: boolean): boolean => {
+        errors.current = 0;
+        if (!branch) { setBranchSpan('Branch is required'); errors.current += 1; }
+        else if (branch.length < 2) { setBranchSpan('Branch must be at least 2 digits'); errors.current += 1; }
+        else setBranchSpan('');
+        if (!phone) { setPhoneSpan('Phone is required'); errors.current += 1; }
+        else if (phone.length < 14) { setPhoneSpan('Phone must be 10 digits'); errors.current += 1; }
+        else setPhoneSpan('');
+        if (!ssn) { setSSNSpan('SSN is required'); errors.current += 1; }
+        else if (ssn.length < 11) { setSSNSpan('SSN must be 9 digits'); errors.current += 1; }
+        else setSSNSpan('');
+        if (!firstName) { setFirstNameSpan('First Name is required'); errors.current += 1; } else setFirstNameSpan('');
+        if (!lastName) { setLastNameSpan('Last Name is required'); errors.current += 1; } else setLastNameSpan('');
+        if (!issue) { setIssueSpan('Issue is required'); errors.current += 1; } else setIssueSpan('');
+        if (requireSolution && !solution) { setSolutionSpan('Solution is required'); errors.current += 1; } else setSolutionSpan('');
 
-        if (phone === '' && phoneSpan === '') {
-            setPhoneSpan('Phone is required');
-            errors.current += 1;
-        } else if (phone.length < 14 && phoneSpan === '') {
-            setPhoneSpan('Phone must be 10 digits');
-            errors.current += 1;
-        } else {
-            setPhoneSpan('');
-        }
+        if (errors.current > 0) { setCloseSpan('There is a problem with your form.'); return false; }
+        setCloseSpan('');
+        return true;
+    };
 
-        if (ssn === '' && ssnSpan === '') {
-            setSSNSpan('SSN is required');
-            errors.current += 1;
-        } else if (ssn.length < 11 && ssnSpan === '') {
-            setSSNSpan('SSN must be 9 digits');
-            errors.current += 1;
-        } else {
-            setSSNSpan('');
-        }
+    const openUpdateModal = () => { if (!validate(false)) return; setModalMode('update'); setIsModalOpen(true); };
+    const openCloseModal  = () => { if (!validate(true))  return; setModalMode('close');  setIsModalOpen(true); };
 
-        if (firstName === '' && firstNameSpan === '') {
-            setFirstNameSpan('First Name is required');
-            errors.current += 1;
-        } else {
-            setFirstNameSpan('');
-        }
+    const handleConfirm = async () => {
+        if (!incidentId) return;
+        try {
+            await updateIncident(instance, incidentId, {
+                branch, phone, ssn, firstName, lastName, issue,
+                solution: modalMode === 'close' ? solution : undefined,
+                additionalDetails,
+                timeSpentSeconds: getElapsedSeconds(),
+                isClosing: modalMode === 'close'
+            });
 
-        if (lastName === '' && lastNameSpan === '') {
-            setLastNameSpan('Last Name is required');
-            errors.current += 1;
-        } else {
-            setLastNameSpan('');
+            // Save note if there's text
+            if (noteText.trim()) {
+                await addNote(instance, incidentId, noteText.trim());
+                setNoteText('');
+                notesRef.current?.refreshNotes();
+            }
+        } catch (err) {
+            console.error('Failed to save incident:', err);
         }
-
-        if (issue === '' && issueSpan === '') {
-            setIssueSpan('Issue is required');
-            errors.current += 1;
-        } else {
-            setIssueSpan('');
-        }
-
-        if (solution === '' && solutionSpan === '') {
-            setSolutionSpan('Solution is required');
-            errors.current += 1;
-        } else {
-            setSolutionSpan('');
-        }
-        if (errors.current > 0) {
-            setCloseSpan('There is a problem with your form.');
-            return;
-        } else {
-            setCloseSpan('');
-
-            setIsModalOpen(true);
-        }
-    }
-    const closeModal = () => {
-        setIsModalOpen(false);
-    }
+    };
 
     return (
         <div id="incComponent">
             <div id="outerIncContainer">
                 <div id="incContainer">
-                    <form id="incForm">
+                    <form id="incForm" className={isReadOnly ? 'incFormReadOnly' : ''}>
                         <div id="incBranchCell" className="incFormCell incFormCol1 incFormRow1">
-                        <span id="incBranchBarSpan" className="errorSpan">{branchSpan}</span>
-                        <div id="incBranchBarContainer">
-                            <div id="incBranchBar" className="incBar">
-                                <input type="text" inputMode="numeric" value={branch} id="incBranch" className="incInput" name="incBranch" min="10" max="9999" step="0" onFocus={handleIncFocus} onBlur={handleIncBlur} onChange={handleIncChange} />
+                            <span id="incBranchBarSpan" className="errorSpan">{branchSpan}</span>
+                            <div id="incBranchBarContainer">
+                                <div id="incBranchBar" className="incBar">
+                                    <input type="text" inputMode="numeric" placeholder=" " value={branch} id="incBranch" className="incInput" name="incBranch" onChange={handleIncChange} disabled={isReadOnly} />
+                                </div>
+                                <input type="button" id="incBranchSearch" className="incButton" value="Search for Branch" onClick={() => setBranchModalOpen(true)} />
                             </div>
-                            <span id="incBranchSpan" className="incSpan">Branch</span>
-                            <input type="button" id="incBranchSearch" className="incButton" value="Search for Branch" />
-                        </div>
                         </div>
                         <div className="incFormCell incFormCol2 incFormRow1 incFormEmpty"></div>
                         <div id="incPhoneCell" className="incFormCell incFormCol1 incFormRow2">
                             <span id="incPhoneBarSpan" className="errorSpan">{phoneSpan}</span>
                             <div id="incPhoneBar" className="incBar">
-                                <input type="tel" id="incPhone" value={phone} className="incInput" name="incPhone" onFocus={handleIncFocus} onBlur={handleIncBlur} onChange={handleIncChange} />
+                                <input type="tel" id="incPhone" placeholder=" " value={phone} className="incInput" name="incPhone" onChange={handleIncChange} disabled={isReadOnly} />
                             </div>
-                            <span id="incPhoneSpan" className="incSpan">Phone</span>
                         </div>
                         <div id="incSSNCell" className="incFormCell incFormCol2 incFormRow2">
                             <span id="incSSNBarSpan" className="errorSpan">{ssnSpan}</span>
                             <div id="incSSNBar" className="incBar">
-                                <input type="text" inputMode="numeric" value={ssn} id="incSSN" className="incInput" name="incSSN" onFocus={handleIncFocus} onBlur={handleIncBlur} onChange={handleIncChange} />
+                                <input type="text" inputMode="numeric" placeholder=" " value={showSSN ? ssn : maskSSN(ssn)} id="incSSN" className="incInput" name="incSSN" onChange={handleIncChange} disabled={isReadOnly} />
+                                <span id="incSSNToggle" onClick={() => setShowSSN(!showSSN)}>
+                                    {showSSN ? (
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+                                            <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+                                            <line x1="1" y1="1" x2="23" y2="23"/>
+                                        </svg>
+                                    ) : (
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                            <circle cx="12" cy="12" r="3"/>
+                                        </svg>
+                                    )}
+                                </span>
                             </div>
-                            <span id="incSSNSpan" className="incSpan">SSN</span>
                         </div>
                         <div id="incFNCell" className="incFormCell incFormCol1 incFormRow3">
                             <span id="incFNBarSpan" className="errorSpan">{firstNameSpan}</span>
                             <div id="incFNBar" className="incBar">
-                                <input type="text" id="incFN" value={firstName} className="incInput" name="incFN" onFocus={handleIncFocus} onBlur={handleIncBlur} onChange={handleIncChange} />
+                                <input type="text" id="incFN" placeholder=" " value={firstName} className="incInput" name="incFN" onChange={handleIncChange} disabled={isReadOnly} />
                             </div>
-                            <span id="incFNSpan" className="incSpan">First Name</span>
                         </div>
                         <div id="incLNCell" className="incFormCell incFormCol2 incFormRow3">
                             <span id="incLNBarSpan" className="errorSpan">{lastNameSpan}</span>
                             <div id="incLNBar" className="incBar">
-                                <input type="text" id="incLN" value={lastName} className="incInput" name="incLN" onFocus={handleIncFocus} onBlur={handleIncBlur} onChange={handleIncChange} />
+                                <input type="text" id="incLN" placeholder=" " value={lastName} className="incInput" name="incLN" onChange={handleIncChange} disabled={isReadOnly} />
                             </div>
-                            <span id="incLNSpan" className="incSpan">Last Name</span>
                         </div>
                         <div id="incIssueCell" className="incFormCell incFormCol1 incFormRow4">
                             <span id="incIssueBarSpan" className="errorSpan">{issueSpan}</span>
                             <div id="incIssueBar" className="incBar">
-                                <select id="incIssue" value={issue} className="incInput" onChange={handleIssueChange} onFocus={handleIncFocus} onBlur={handleIncBlur}>
-                                    <option className="defaultValue" value="" disabled>Select an Issue</option>
-                                    <option value="option1">Online Account</option>
-                                    <option value="option2">Payment</option>
-                                    <option value="option3">Credit Score</option>
+                                <select id="incIssue" value={issue} className="incInput" onChange={handleIssueChange} disabled={isReadOnly}>
+                                    <option value="" disabled>Select an Issue</option>
+                                    {getIssues().map(i => (
+                                        <option key={i.issueId} value={i.name}>{i.name}</option>
+                                    ))}
                                 </select>
                             </div>
-                            <span id="incIssueSpan" className="incSpan">Issue</span>
                         </div>
                         <div id="incSolCell" className="incFormCell incFormCol2 incFormRow4">
                             <span id="incSolBarSpan" className="errorSpan">{solutionSpan}</span>
                             <div id="incSolBar" className="incBar">
-                                {issue === "" ? 
-                                    <select id="incSol" value={solution} className="incInput" disabled> 
-                                        <option className="defaultValue" value="" disabled>Select a Solution</option>
+                                {issue === "" ?
+                                    <select id="incSol" value={solution} className="incInput" disabled>
+                                        <option value="" disabled>Select a Solution</option>
                                     </select>
-                                : 
-                                    <select id="incSol" value={solution} className="incInput" onChange={handleSolutionChange} onFocus={handleIncFocus} onBlur={handleIncBlur}>
-                                        <option className="defaultValue" value="" disabled>Select a Solution</option>
-                                        <option value="option1">Reset Password</option>
-                                        <option value="option2">Change Payment Method</option>
-                                        <option value="option3">Request Credit Report</option>
+                                :
+                                    <select id="incSol" value={solution} className="incInput" onChange={handleSolutionChange} disabled={isReadOnly}>
+                                        <option value="" disabled>Select a Solution</option>
+                                        {getSolutionsForIssue(getIssues().find(i => i.name === issue)?.issueId ?? 0).map(s => (
+                                            <option key={s.solutionId} value={s.name}>{s.name}</option>
+                                        ))}
                                     </select>
                                 }
                             </div>
-                            <span id="incSolSpan" className="incSpan">Solution</span>
                         </div>
+                        {showTips && !isReadOnly && (
+                            <div id="incCallTipsContainer">
+                                <div id="incCallTipsHeader" onClick={() => setTipsExpanded(!tipsExpanded)}>
+                                    <span id="incCallTipsTitle">Call Tips</span>
+                                    <span id="incCallTipsToggle">{tipsExpanded ? '▲' : '▼'}</span>
+                                </div>
+                                {tipsExpanded && (
+                                    <ul id="incCallTipsList">
+                                        {getCallTipsForIssue(getIssues().find(i => i.name === issue)?.issueId ?? 0).map(tip => (
+                                            <li key={tip.tipId} className="incCallTip">{tip.tip}</li>
+                                        ))}
+                                    </ul>
+                                )}
+                            </div>
+                        )}
                         <div id="incADContainer">
                             <div id="incADBar" className="incBar">
-                                <textarea id="incAD" className="incInput" value={additionalDetails} name="incAD" onFocus={handleIncFocus} onBlur={handleIncBlur} onChange={handleIncChange}></textarea>
+                                <textarea id="incAD" className="incInput" placeholder=" " value={additionalDetails} name="incAD" onChange={handleIncChange} disabled={isReadOnly}/>
                             </div>
-                            <span id="incADSpan" className="incSpan">Additional Details...</span>
                             <div id="incCloseContainer">
-                                <input type="button" id="incClose" className="incButton" value="Close Ticket" onClick={openModal}/>
+                                {isReadOnly ? (
+                                    <input type="button" id="incNewIncident" className="incButton" value="New Incident" onClick={handleNewIncident} />
+                                ) : (
+                                    <>
+                                        <input type="button" id="incUpdate" className="incButton" value="Update" onClick={openUpdateModal} />
+                                        <input type="button" id="incClose" className="incButton" value="Close Ticket" onClick={openCloseModal} />
+                                    </>
+                                )}
                                 <span id="incCloseSpan" className="errorSpan">{closeSpan}</span>
                             </div>
                         </div>
                     </form>
                 </div>
             </div>
-            <Confirm isOpen={isModalOpen} onClose={closeModal} />
+            <Notes
+                ref={notesRef}
+                incidentId={incidentId}
+                isReadOnly={isReadOnly}
+                noteText={noteText}
+                onNoteChange={setNoteText}
+            />
+            <Confirm
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                onConfirm={handleConfirm}
+                mode={modalMode}
+            />
+            <Confirm
+                isOpen={blocker.state === 'blocked'}
+                onClose={() => blocker.reset?.()}
+                onConfirm={async () => { await saveTime(); blocker.proceed?.(); }}
+                mode="update"
+                skipNavigate={true}
+            />
+            <BranchSearchModal
+                isOpen={branchModalOpen}
+                onClose={() => setBranchModalOpen(false)}
+                currentBranch={branch || undefined}
+                cachedBranch={_cachedBranch}
+                onSelect={(code, branchInfo) => {
+                    setBranch(code);
+                    setCachedBranch(branchInfo);
+                }}
+            />
         </div>
     );
-}
+};
 
 export default Incident;

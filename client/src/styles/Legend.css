@@ -1,0 +1,53 @@
+#legendContainer {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 10;
+}
+
+#legendIcon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #e2e8f0;
+    color: #4a5568;
+    transition: background-color 150ms, color 150ms;
+}
+
+#legendTooltip {
+    position: absolute;
+    top: 28px;
+    right: 22px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 10px 12px;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+    min-width: 180px;
+    z-index: 20;
+}
+
+.legendItem {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0;
+}
+
+.legendSwatch {
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+    border: 1px solid #e2e8f0;
+    flex-shrink: 0;
+}
+
+.legendLabel {
+    font-family: Work Sans, sans-serif;
+    font-size: 0.75rem;
+    color: #4a5568;
+    white-space: nowrap;
+}

@@ -1,17 +1,15 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+using Microsoft.Identity.Web;
+using System.IO;
+using IncidentManagement.Data;
+using IncidentManagement.Services;
 
-namespace NewProject
+namespace IncidentManagement
 {
     public class Startup
     {
@@ -22,29 +20,68 @@ namespace NewProject
 
         public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers();
+            bool bypassAuth = Configuration.GetValue<bool>("BypassAuth");
+
+            // Incidents on local SQL Express
+            services.AddDbContext<IncidentDbContext>(options =>
+                options.UseSqlServer(
+                    Configuration.GetConnectionString("IncidentConnection")));
+            
+            services.AddScoped<IStatsService, StatsService>();
+            services.AddScoped<ISearchService,   SearchService>();
+            services.AddScoped<IIncidentService, IncidentService>();
+            services.AddScoped<ILoanService,     LoanService>();
+            services.AddScoped<IIssueService,    IssueService>(); // Add real IssueService when ready
+            services.AddScoped<IIncidentNoteService, IncidentNoteService>();
+            services.AddSignalR();
+            services.AddScoped<ICallService, CallService>();
+            services.AddScoped<IBranchService, BranchService>();
+
+            if (!bypassAuth)
+            {
+                services.AddAuthentication()
+                    .AddMicrosoftIdentityWebApi(Configuration.GetSection("AzureAd"));
+            }
+
+            services.AddControllers()
+                .AddNewtonsoftJson(options =>
+                    options.SerializerSettings.ReferenceLoopHandling = 
+                        Newtonsoft.Json.ReferenceLoopHandling.Ignore);
+
+                        services.AddCors(options =>
+                        {
+                            options.AddPolicy("DevCors", builder =>
+                                builder.WithOrigins("http://localhost:5173")
+                                    .AllowAnyHeader()
+                                    .AllowAnyMethod()
+                                    .AllowCredentials());
+                        });
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                app.UseCors("DevCors");
             }
 
             app.UseHttpsRedirection();
-
             app.UseRouting();
 
-            app.UseAuthorization();
+            bool bypassAuth = Configuration.GetValue<bool>("BypassAuth");
+            if (!bypassAuth)
+            {
+                app.UseAuthentication();
+                app.UseAuthorization();
+            }
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapHub<IncidentManagement.Hubs.CallHub>("/hubs/call");
             });
         }
     }

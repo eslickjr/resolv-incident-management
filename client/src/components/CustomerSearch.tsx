@@ -1,171 +1,162 @@
 import NewCustomer from "./NewCustomer";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { useMsal } from "@azure/msal-react";
+import { searchByName, searchBySSN } from "../api/search";
+import { SearchResult } from "../interfaces/Types";
+import { createIncident, getOpenIncidentBySSN } from "../api/incidents";
 
 import '../styles/CustomerSearch.css';
 
-interface SearchResultsI {
-    branch: string;
-    firstName: string;
-    lastName: string;
-    customerId?: number;
-    loanId?: number;
-}
-
-const customerSearch = () => {
-    const [searchResults, setSearchResults] = useState<SearchResultsI[][]>([]);
+const CustomerSearch = () => {
+    const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-    
+    const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const latestSearchValue = useRef<string>('');
+
     const navigate = useNavigate();
+    const { instance } = useMsal();
 
-    useEffect(() => {
-        const searchEl = document.getElementById('searchResults');
-        const searchInputEl = document.getElementById('searchInput');
-        const searchBarEl = document.getElementById('searchBar');
-
-        const handleFocusOut = () => {
-            setTimeout(() => {
-                if (document.activeElement !== searchEl && document.activeElement !== searchInputEl) {
-                    if ((searchInputEl as HTMLInputElement)?.value.length > 2) {
-                        searchEl?.style.setProperty('visibility', 'hidden');
-                        searchBarEl?.style.setProperty('border-radius', '4px');
-                    }
-                }
-            }, 0);
-        };
-
-        const handleFocus = () => {
-            if ((searchInputEl as HTMLInputElement)?.value.length > 2) {
-                searchEl?.style.setProperty('visibility', 'visible');
-                searchBarEl?.style.setProperty('border-radius', '4px 4px 0 0');
-            }
-        };
-
-        const handleScroll = () => {
-            const rect = searchBarEl?.getBoundingClientRect();
-            if (searchEl && rect) {
-                searchEl.style.top = `${rect.bottom + window.scrollY}px`;
-                searchEl.style.left = `${rect.left + window.scrollX}px`;
-            }
-        };
-
-        searchInputEl?.addEventListener('blur', handleFocusOut);
-        searchInputEl?.addEventListener('focus', handleFocus);
-        document.body.addEventListener('scroll', handleScroll);
-        window.addEventListener('resize', handleScroll);
-
-        return () => {
-            searchInputEl?.removeEventListener('blur', handleFocusOut);
-            searchInputEl?.removeEventListener('focus', handleFocus);
-            window.removeEventListener('scroll', handleScroll);
-        };
-    }, []);
-
-
+    // Determine if input is SSN (numeric) or name (alpha)
+    const isSSN = (value: string): boolean => /^\d/.test(value);
 
     const handleSearchChange = async (e: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
-        const searchEl = document.getElementById('searchResults');
-        const searchBarEl = document.getElementById('searchBar');
-        e.target.value = e.target.value.replace(/[^a-zA-Z0-9\s]/g, '');
-
         if (e.target.value.length > 0) {
             if (e.target.value.charAt(0) === ' ') {
                 e.target.value = e.target.value.slice(1);
-                e.target.setSelectionRange(0, 0);
             } else if (isNaN(Number(e.target.value.charAt(0)))) {
-                // Handle case where the first character is a number
+                // Name input — allow letters and spaces only
                 e.target.value = e.target.value.replace(/[^a-zA-Z\s]/g, '');
             } else {
-                e.target.value = e.target.value.replace(/[^0-9\s]/g, '');
-                let formattedSearch = e.target.value.slice(0, 3);
-
-                if (e.target.value.length > 3) {
-                    formattedSearch += '-' + e.target.value.slice(3, 5);
-                }
-
-                if (e.target.value.length > 5) {
-                    formattedSearch += '-' + e.target.value.slice(5, 9);
-                }
-
-                e.target.value = formattedSearch;
+                // SSN input — numbers only with formatting
+                e.target.value = e.target.value.replace(/[^0-9]/g, '');
+                let formatted = e.target.value.slice(0, 3);
+                if (e.target.value.length > 3) formatted += '-' + e.target.value.slice(3, 5);
+                if (e.target.value.length > 5) formatted += '-' + e.target.value.slice(5, 9);
+                e.target.value = formatted;
             }
         }
-        
-        if (e.target.value.length > 2) {
-            /*const customers: CustomerI[] = await getCustomers({ name: e.target.value })
-            const customerLoans: LoanI[] = await getCustomerLoans({ name: e.target.value })*/
 
-            if (searchEl && searchBarEl) {
-                searchEl.style.visibility = 'visible';
-                searchEl.style.width = searchBarEl.clientWidth + 'px';
-                searchBarEl.style.borderRadius = '4px 4px 0 0';
+        const currentValue = e.target.value;
+        latestSearchValue.current = currentValue;
+
+        setSearchResults([]);
+
+        if (currentValue.length > 2) {
+            if (debounceRef.current) clearTimeout(debounceRef.current);
+
+            const shouldSearch = isSSN(currentValue)
+                ? currentValue.length === 11
+                : true;
+
+            if (shouldSearch) {
+                debounceRef.current = setTimeout(async () => {
+                    try {
+                        let results;
+                        if (isSSN(currentValue)) {
+                            results = await searchBySSN(instance, currentValue);
+                        } else {
+                            const parts = currentValue.trim().split(/\s+/);
+                            const firstName = parts[0] ?? '';
+                            const lastName = parts.length > 1 ? parts[1] : '';
+                            results = await searchByName(instance, firstName, lastName);
+                        }
+
+                        if (latestSearchValue.current !== currentValue) return;
+                        setSearchResults(results);
+                    } catch (err) {
+                        console.error('Search failed:', err);
+                        setSearchResults([]);
+                    }
+                }, 1000);
             }
-
-            setSearchResults([[
-                {
-                    branch: '1234',
-                    firstName: 'John',
-                    lastName: 'Doe',
-                    customerId: 1,
-                    loanId: 123456
-
-                },
-            ], [
-                {
-                    branch: '5678',
-                    firstName: 'James',
-                    lastName: 'Austin',
-                    customerId: 2,
-                },
-            ], [
-                {
-                    branch: '8765',
-                    firstName: 'Emily',
-                    lastName: 'Stratter',
-                    loanId: 654321,
-                }]]);
         } else {
+            if (debounceRef.current) clearTimeout(debounceRef.current);
             setSearchResults([]);
-
-            if (searchEl) {
-                searchEl.style.visibility = 'hidden';
-            }
-
-            if (searchBarEl) {
-                searchBarEl.style.borderRadius = '4px';
-            }
         }
     };
 
-    const handleSearchClick = (index: number, customer: any): void => {
-        if (index === 0) {
-            //Check if customer has account
-            //customer.loanid = getloans(customer.customerid)
-            //
-            if (customer.loanId) {
-                // This navigates to the loan pulled from the customer.loanId
-                navigate(`/customerAccount/${customer.loanId}`);
-            } 
-        } else if (index === 1) {
-            // This navigates to the loan pulled from the loan.loanId
-            navigate(`/noAccount/${customer.customerId}`);
-        } else {
-            // Create a customer object with the customer data
-            // customer.id = createCustomer(customer)
-            //
+    // Priority 1-3 = exact, 4-6 = loose
+    // 1/4 = Incident+Loan (CL), 2/5 = Incident only (CX), 3/6 = Loan only (LN)
+    const getTypeLabel = (priority: number): string => {
+        const base = ((priority - 1) % 3) + 1;
+        if (base === 1) return 'CL';
+        if (base === 2) return 'CX';
+        return 'LN';
+    };
 
-            // This navigates to the loan pulled from the customer.loanId
-            navigate(`/customerAccount/${customer.loanId}`);
+    const getTypeCssClass = (priority: number): string => {
+        const base = ((priority - 1) % 3) + 1;
+        if (base === 1) return 'clSearch typeSearch';
+        if (base === 2) return 'cxSearch typeSearch';
+        return 'lnSearch typeSearch';
+    };
+
+    const handleSearchClick = async (result: SearchResult): Promise<void> => {
+        const typeLabel = getTypeLabel(result.priority);
+
+        if (typeLabel === 'CL' || typeLabel === 'CX') {
+            // Check if the existing incident is open
+            if (result.incidentId && !result.closedAt) {
+                // Incident is open — navigate to it
+                if (typeLabel === 'CL' && result.branch && result.account) {
+                    navigate(`/customerAccount/${result.incidentId}/${result.branch}/${result.account}`);
+                } else {
+                    navigate(`/noAccount/${result.incidentId}`);
+                }
+            } else {
+                // Incident is closed or none — check for any open incident by SSN
+                if (result.ssn) {
+                    const openIncident = await getOpenIncidentBySSN(instance, result.ssn);
+                    if (openIncident) {
+                        if (result.account && result.branch) {
+                            navigate(`/customerAccount/${openIncident.incidentId}/${result.branch}/${result.account}`);
+                        } else {
+                            navigate(`/noAccount/${openIncident.incidentId}`);
+                        }
+                        return;
+                    }
+                }
+                // No open incident — create new
+                const newIncident = await createIncident(instance, {
+                    firstName: result.firstName,
+                    lastName: result.lastName,
+                    ssn: result.ssn,
+                    phone: result.phone,
+                    branch: result.branch,
+                    account: result.account
+                });
+                if (newIncident) {
+                    if (result.account && result.branch) {
+                        navigate(`/customerAccount/${newIncident.incidentId}/${result.branch}/${result.account}`);
+                    } else {
+                        navigate(`/noAccount/${newIncident.incidentId}`);
+                    }
+                }
+            }
+        } else if (typeLabel === 'LN' && result.loanId) {
+            // Loan only — check for open incident by SSN first
+            if (result.ssn) {
+                const openIncident = await getOpenIncidentBySSN(instance, result.ssn);
+                if (openIncident) {
+                    navigate(`/customerAccount/${openIncident.incidentId}/${result.branch}/${result.account}`);
+                    return;
+                }
+            }
+            // No open incident — create new
+            const newIncident = await createIncident(instance, {
+                firstName: result.firstName,
+                lastName: result.lastName,
+                ssn: result.ssn,
+                phone: result.phone,
+                branch: result.branch,
+                account: result.account
+            });
+            if (newIncident) {
+                navigate(`/customerAccount/${newIncident.incidentId}/${result.branch}/${result.account}`);
+            }
         }
-    }
-
-    const openModal = () => {
-        setIsModalOpen(true);
-    }
-
-    const closeModal = () => {
-        setIsModalOpen(false);
-    }
+    };
 
     return (
         <div>
@@ -173,34 +164,48 @@ const customerSearch = () => {
                 <div id="searchContainer">
                     <div id="searchBarContainer">
                         <div id="searchBar">
-                            <input type="text" id="searchInput" onChange={handleSearchChange} placeholder="Search for customer..." />
-                        </div>
-                        <div id="searchResults" tabIndex={0}>
-                            <ul id="searchResultsList">
-                                {searchResults.map((customers, arrayIndex) => (
-                                    customers.map((customer, index) => (
-                                        <li key={`${arrayIndex}-${index}`} className="searchResult" onClick={() => handleSearchClick(arrayIndex, customer)}>
+                            <input
+                                type="text"
+                                id="searchInput"
+                                onChange={handleSearchChange}
+                                placeholder="Search for customer..."
+                            />
+                            <div id="searchResults" className={searchResults.length > 0 ? 'searchResultsVisible' : ''} tabIndex={0}>
+                                <ul id="searchResultsList">
+                                    {searchResults.map((result) => (
+                                        <li
+                                            key={`${result.incidentId ?? 'l'}-${result.account ?? result.fullName}`}
+                                            className="searchResult"
+                                            onClick={() => handleSearchClick(result)}
+                                        >
                                             <div className="branchContainer searchResultContainer">
-                                                <p className="branchSearch">{customer.branch}</p>
+                                                <p className="branchSearch">{result.branch}</p>
                                             </div>
                                             <div className="nameContainer searchResultContainer">
-                                                <p className="nameSearch">{customer.firstName} {customer.lastName}</p>
+                                                <p className="nameSearch">{result.fullName}</p>
                                             </div>
                                             <div className="typeContainer searchResultContainer">
-                                                {arrayIndex === 0 ? <p className="clSearch typeSearch">CL</p> : arrayIndex === 1 ? <p className="cxSearch typeSearch">CX</p> : <p className="lnSearch typeSearch">LN</p>}
+                                                <p className={getTypeCssClass(result.priority)}>
+                                                    {getTypeLabel(result.priority)}
+                                                </p>
                                             </div>
                                         </li>
-                                    ))
-                                ))}
-                            </ul>
+                                    ))}
+                                </ul>
+                            </div>
                         </div>
                     </div>
-                    <input type="button" id="newCustomer" value="New Customer" onClick={openModal} />
-                    <NewCustomer isOpen={isModalOpen} onClose={closeModal} />
+                    <input
+                        type="button"
+                        id="newCustomer"
+                        value="New Customer"
+                        onClick={() => setIsModalOpen(true)}
+                    />
+                    <NewCustomer isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
                 </div>
             </div>
         </div>
     );
 }
 
-export default customerSearch;
+export default CustomerSearch;

@@ -1,24 +1,30 @@
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
+import { IncidentsByTypeDto } from "../interfaces/Types";
 
-const data = [
-  { name: "Online Account", sales: 400 },
-  { name: "Payment", sales: 300 },
-  { name: "Credit Score", sales: 500 },
-];
+interface ChartProps {
+    data: IncidentsByTypeDto[];
+}
 
-const ChartIncPer = () => (
-    <div id="incTypeChartContainer">
-        <h2 className="chartTitle">Incidents by Type</h2>
-        <ResponsiveContainer width="100%" aspect={2}>
-            <BarChart width={500} height={300} data={data}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="sales" fill="#8884d8" />
-            </BarChart>
-        </ResponsiveContainer>
-    </div>
-);
+const ChartIncType = ({ data }: ChartProps) => {
+    const chartData = data.map(d => ({ name: d.issue, incidents: d.count }));
 
-export default ChartIncPer;
+    return (
+        <>
+            <h2 className="chartTitle">Incidents by Type</h2>
+            <ResponsiveContainer width="100%" aspect={1.5}>
+                <BarChart data={chartData} margin={{ top: 4, right: 20, left: 0, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
+                    <XAxis dataKey="name" tick={{ fontFamily: 'Work Sans', fontSize: 12 }} />
+                    <YAxis tick={{ fontFamily: 'Work Sans', fontSize: 12 }} />
+                    <Tooltip
+                        contentStyle={{ fontFamily: 'Work Sans', fontSize: 13 }}
+                        cursor={{ fill: '#e3f2fd' }}
+                    />
+                    <Bar dataKey="incidents" fill="#0d478e" radius={[3, 3, 0, 0]} />
+                </BarChart>
+            </ResponsiveContainer>
+        </>
+    );
+};
+
+export default ChartIncType;

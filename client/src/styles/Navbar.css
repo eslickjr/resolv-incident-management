@@ -1,54 +1,103 @@
 #navContainer {
-    background: #fff;
-    border-bottom: 1px solid #e8eaed;
-    padding: 5px 24px;
+    background: #1a1a2e;
+    padding: 0 24px;
     margin-bottom: 30px;
-  }
-  
-  #navbar {
-    list-style: none;
-    margin: 0;
-    padding: 0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+}
+
+#navLeft {
     display: flex;
     align-items: center;
-  }
-  
-  #navbar a {
-    display: block;
-    color: #888;
-    text-align: center;
-    font-size: 16px;
-    font-weight: 400;
-    margin-top: 5px;
-    padding: 7px;
-    border-bottom: solid 4px #fff;
-    text-decoration: none;
-  }
-  
-  #logo {
-    height: 40px;
-    width: 40px;
-    margin-top: 4px;
-  }
-  
-  .home {
-    color: #367bd0 !important;
-    font-weight: 500 !important;
-  }
-  
-  #userStats {
+    height: 100%;
+    gap: 24px;
+}
+
+#navRight {
     display: flex;
     align-items: center;
+    height: 100%;
+}
+
+#navBrand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none !important;
+    height: 100%;
+}
+
+#logo {
+    height: 36px;
+    width: 36px;
+    position: relative;
+    top: -1px;
+}
+
+#navBrandTextGroup {
+    display: flex;
     flex-direction: column;
-    width: fit-content;
-    height: fit-content;
-  }
-  
-  #statsLink:hover {
-    border-bottom: solid 4px #0D478E !important;
-  }
-  
-  #userStats:hover #statsLink {
-    font-weight: initial;
-    color: #000;
-  }
+    gap: 0;
+}
+
+#navBrandText {
+    font-family: Inter, sans-serif;
+    font-weight: 700;
+    font-size: 17px;
+    color: #fff !important;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none !important;
+    letter-spacing: -0.5px;
+    position: relative;
+    top: 0px;
+}
+
+#navBrandSubText {
+    font-family: Inter, sans-serif;
+    font-weight: 400;
+    font-size: 9px;
+    color: rgba(255,255,255,0.5);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    position: relative;
+    top: -2px;
+}
+
+#navLinks {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    gap: 4px;
+}
+
+.navLink {
+    display: flex;
+    align-items: center;
+    color: #a0aec0;
+    font-family: Work Sans, sans-serif;
+    font-size: 0.9rem;
+    font-weight: 400;
+    padding: 8px 0;
+    margin: 0 12px;
+    border-bottom: 3px solid transparent;
+    border-radius: 4px 4px 0 0;
+    text-decoration: none !important;
+    transition: color 200ms, border-bottom-color 200ms;
+}
+
+.navLink:hover {
+    color: #fff;
+    border-bottom-color: #4299e1;
+}
+
+.navLinkActive {
+    color: #fff;
+    border-bottom-color: #4299e1;
+    font-weight: 500;
+}

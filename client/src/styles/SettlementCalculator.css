@@ -1,0 +1,217 @@
+#settlementCalc {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.settlementSection {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.settlementSection:last-child {
+    border-bottom: none;
+}
+
+.settlementSectionHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.settlementSectionTitle {
+    font-family: Work Sans !important;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #718096;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.settlementMeta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.settlementMetaLabel {
+    font-family: Work Sans !important;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #4a5568;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.settlementMetaValue {
+    font-family: Work Sans !important;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #0d478e;
+}
+
+.settlementTiersGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+}
+
+.settlementTierCard {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    background: #f7fafc;
+    transition: border-color 150ms, background-color 150ms;
+}
+
+.settlementTierCardSelected {
+    border-color: #0d478e !important;
+    background: #ebf8ff !important;
+}
+
+.settlementTierTop {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.settlementPctInput {
+    font-family: Work Sans !important;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #0d478e;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    padding: 3px 6px;
+    width: 48px;
+    text-align: center;
+    background: #fff;
+}
+
+.settlementPctInput:focus {
+    outline: none;
+    border-color: #0d478e;
+}
+
+.settlementTierPctLabel {
+    font-family: Work Sans !important;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #718096;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+}
+
+.settlementTierTotal {
+    font-family: Work Sans !important;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #0d478e;
+    text-align: center;
+}
+
+.settlementTierBreakdown {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.settlementTierPayment {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.settlementTierPaymentLabel {
+    font-family: Work Sans !important;
+    font-size: 0.7rem;
+    color: #718096;
+    font-weight: 500;
+}
+
+.settlementTierPaymentValue {
+    font-family: Work Sans !important;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #1a202c;
+}
+
+.settlementSelectBtn {
+    margin-top: 4px;
+    font-family: Work Sans !important;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #fff;
+    background: #0d478e;
+    border: none;
+    border-radius: 4px;
+    padding: 5px 10px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: auto;
+    transition: background-color 150ms;
+}
+
+.settlementSelectBtn:hover:not(:disabled) { background: #0a3a72; }
+.settlementSelectBtn:disabled { background: #a0aec0; cursor: default; }
+.settlementSelectBtnSelected { background: #082d58 !important; }
+
+/* Contractual payment input */
+.settlementContractualRow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.settlementContractualLabel {
+    font-family: Work Sans !important;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #4a5568;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+}
+
+.settlementContractualInput {
+    display: flex;
+    align-items: center;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    overflow: hidden;
+    transition: border-color 150ms;
+}
+
+.settlementContractualInput:focus-within {
+    border-color: #0d478e;
+    box-shadow: 0 0 0 2px rgba(13,71,142,0.15);
+}
+
+.settlementDollarSign {
+    padding: 6px 8px;
+    background: #f7fafc;
+    border-right: 1px solid #e2e8f0;
+    font-family: Work Sans !important;
+    font-size: 0.875rem;
+    color: #718096;
+}
+
+.settlementContractualInput input {
+    font-family: Work Sans !important;
+    font-size: 0.875rem;
+    color: #1a202c;
+    border: none;
+    padding: 6px 10px;
+    width: 100px;
+}
+
+.settlementContractualInput input:focus { outline: none; }

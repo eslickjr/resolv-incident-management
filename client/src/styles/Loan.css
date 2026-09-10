@@ -3,98 +3,105 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    margin-bottom: 30px;
+    margin-bottom: 16px;
 }
 
-#loanContainer{
+#loanContainer {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    width: 93vw;
-    padding: 30px 20px 30px 20px;
+    width: calc(93vw + 40px);
+    padding: 16px 20px;
     background: #fff;
-    border-radius: 4px;
-    box-shadow: 0 2px 1px -1px #0003, 0 1px 1px #00000024, 0 1px 3px #0000001f;
-}
-
-#loanInformationContainer {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-evenly;
-}
-
-#loanContainer p {
-    font-size: 1rem;
-    font-weight: 500;
-    color: #0a366b;
-    margin: 10px;
-}
-
-#loanContainer span {
-    color: black;
-    font-size: 1rem;
-    font-weight: 400;
-    margin: 10px;
+    border-radius: 0 4px 4px 4px;
+    border: 1px solid #e2e8f0;
 }
 
 #loanInformationContainer {
     display: flex;
     flex-direction: row;
     justify-content: center;
-    width: 80%;
+    width: 90%;
     margin: 0 auto;
+    gap: 0;
 }
 
 .broadInfoContainer {
-    width: 33%;
-    margin-bottom: 20px;
-    background-color: #f5f5f5;
+    flex: 1;
+    padding: 12px 16px;
+    background-color: #f7fafc;
+    border: 1px solid #e2e8f0;
     border-radius: 4px;
 }
 
-.infoContainer {
-    padding-left: 20px;
-    padding-right: 20px;
-}
-
 #loanInfoContainer {
-    border-left: 2px solid rgb(201, 201, 201);
-    border-right: 2px solid rgb(201, 201, 201); 
-}
-
-.info {
-    display: flex;
-    flex-direction: row;
-    justify-content: left;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
 }
 
 .loanInfoTitleContainer {
     display: flex;
     flex-direction: row;
     justify-content: center;
-}   
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #e2e8f0;
+}
 
 .loanInfoTitle {
-    font-size: large;
+    font-size: 0.7rem;
     font-weight: 700;
-    color: #5783b9;
-    text-align: center;
-    padding-bottom: 10px;
-    border-bottom: 2px solid rgb(201, 201, 201);
+    font-family: Work Sans !important;
+    color: #718096;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.infoContainer {
+    padding: 0;
+}
+
+.info {
+    display: flex;
+    flex-direction: row;
+    justify-content: left;
+    align-items: baseline;
+    flex-wrap: wrap;
+}
+
+#loanContainer p {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #4a5568;
+    margin: 4px 0;
+    font-family: Work Sans !important;
+}
+
+#loanContainer .infoContainer span {
+    color: #1a202c;
+    font-size: 0.875rem;
+    font-weight: 400;
+    margin: 0 8px 0 4px;
+    font-family: Work Sans !important;
 }
 
 #pmtHistoryTitleContainer {
     display: flex;
     flex-direction: row;
     justify-content: left;
-    margin: 0 auto;
-    width: 80%;
-    padding-top: 20px;
-    border-top: 2px solid rgb(201, 201, 201);
+    margin: 12px auto 8px auto;
+    width: 90%;
+    padding-top: 12px;
+    border-top: 1px solid #e2e8f0;
 }
 
 #pmtHistoryTitle {
-    margin-left: 20px;
-    font-size: large;
+    font-size: 0.7rem;
     font-weight: 700;
+    font-family: Work Sans !important;
+    color: #718096;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 0;
 }

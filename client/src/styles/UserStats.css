@@ -1,314 +1,244 @@
+#statsPage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px 0 40px 0;
+    width: 100%;
+}
+
 #statsTitle {
     text-align: center;
-    font-size: 1.7rem;
-    margin: 2vh 35px;
-    font-weight: 500;
+    font-size: 1.2rem;
+    margin: 0 0 16px 0;
+    font-weight: 600;
     font-family: Work Sans !important;
+    color: #1a202c;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
 }
 
-#outerStatsContainer {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 30px;
-}
-
-#statsContainer{
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    width: 93vw;
-    padding: 30px 20px 30px 20px;
-    background: #fff;
-    border-radius: 4px;
-    margin-bottom: 30px;
-    box-shadow: 0 2px 1px -1px #0003, 0 1px 1px #00000024, 0 1px 3px #0000001f;
-}
-
-#statsTableOuterContainer {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    margin: 0 auto;
-}
-#statsTimeContainer {
+/* ── Period Toggle ───────────────────────────────────────────────────────── */
+#statsPeriodContainer {
     display: flex;
     flex-direction: row;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 30px;
-}
-
-.statsTimeButton {
-    display: inline-flex;
-    -webkit-box-align: center;
-    align-items: center;
-    -webkit-box-pack: center;
-    justify-content: center;
-    position: relative;
-    box-sizing: border-box;
-    -webkit-tap-highlight-color: transparent;
-    cursor: pointer;
-    user-select: none;
-    vertical-align: middle;
-    appearance: none;
-    font-family: Roboto, Helvetica, Arial, sans-serif;
-    font-weight: 500;
-    font-size: 0.875rem;
-    line-height: 1.75;
-    letter-spacing: 0.02857em;
-    text-transform: uppercase;
-    min-width: 64px;
-    color: white;
-    background-color: rgb(25, 118, 210);
-    box-shadow: rgba(0, 0, 0, 0.2) 0px 3px 1px -2px, rgba(0, 0, 0, 0.14) 0px 2px 2px 0px, rgba(0, 0, 0, 0.12) 0px 1px 5px 0px;
-    outline: 0px;
-    border-style: initial;
-    border-color: initial;
-    border-image: initial;
-    margin: 20px;
-    text-decoration: none;
-    padding: 6px 16px;
+    gap: 0;
+    margin-bottom: 20px;
     border-radius: 4px;
-    transition: none;
-}
-  
-.statsTimeButton:hover {
-    text-decoration: none;
-    background-color: rgb(21, 101, 192);
-    box-shadow: rgba(0, 0, 0, 0.2) 0px 2px 4px -1px, rgba(0, 0, 0, 0.14) 0px 4px 5px 0px, rgba(0, 0, 0, 0.12) 0px 1px 10px 0px;
-}
-  
-.statsTimeButton:active {
-    background-color: rgb(17, 82, 147);
-    box-shadow: rgba(0, 0, 0, 0.2) 0px 5px 5px -3px, rgba(0, 0, 0, 0.14) 0px 8px 10px 1px, rgba(0, 0, 0, 0.12) 0px 3px 14px 2px;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    background: #fff;
 }
 
-.statsTimeSelected {
-    transition: all 0.4s;
-    background-Color: transparent;
+.statsPeriodBtn {
+    padding: 6px 20px;
+    font-family: Work Sans !important;
+    font-size: 0.8rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    background-color: #fff;
+    color: #4a5568;
+    border: none;
+    border-right: 1px solid #e2e8f0;
+    cursor: pointer;
+    transition: background-color 150ms, color 150ms;
+}
+
+.statsPeriodBtn:last-child {
+    border-right: none;
+}
+
+.statsPeriodBtn:hover {
+    background-color: #f7fafc;
+    color: #1a202c;
+}
+
+.statsPeriodSelected {
+    background-color: #0d478e;
+    color: #fff;
+    cursor: default;
     pointer-events: none;
-    border: 1px solid #cacaca;
-    box-shadow: rgba(0, 0, 0, 0.2) 0px 0px 3px 1px;
-    color: #cacaca;
 }
 
-#statsTable {
+.statsPeriodSelected:hover {
+    background-color: #0d478e;
+    color: #fff;
+}
+
+/* ── Summary Cards ───────────────────────────────────────────────────────── */
+#statsSummaryContainer {
+    display: flex;
+    flex-direction: row;
+    gap: 12px;
+    margin-bottom: 16px;
+    width: 93vw;
+}
+
+.statsSummaryCard {
+    flex: 1;
+    background: #fff;
+    border-radius: 4px;
+    padding: 14px 16px;
+    border: 1px solid #e2e8f0;
+    border-left: 3px solid #0d478e;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.statsSummaryLabel {
+    font-family: Work Sans !important;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #718096;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.statsSummaryValue {
+    font-family: Work Sans !important;
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #1a202c;
+}
+
+/* ── Charts ──────────────────────────────────────────────────────────────── */
+#statsChartsContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 93vw;
+    margin-bottom: 16px;
+}
+
+#statsIncPerContainer {
+    background: #fff;
+    border-radius: 4px;
+    padding: 16px;
+    border: 1px solid #e2e8f0;
+}
+
+#statsBottomCharts {
+    display: flex;
+    flex-direction: row;
+    gap: 12px;
+}
+
+#statsIncTypeContainer {
+    flex: 1;
+    background: #fff;
+    border-radius: 4px;
+    padding: 16px;
+    border: 1px solid #e2e8f0;
+}
+
+#statsSolContainer {
+    flex: 1;
+    background: #fff;
+    border-radius: 4px;
+    padding: 16px;
+    border: 1px solid #e2e8f0;
+}
+
+.chartTitle {
+    font-family: Work Sans !important;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #718096;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 0 0 12px 0;
+}
+
+#issueFilter {
+    font-family: Work Sans !important;
+    font-size: 0.8rem;
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: 1px solid #e2e8f0;
+    cursor: pointer;
+    color: #1a202c;
+    background-color: #fff;
+}
+
+#issueFilter:hover {
+    border-color: #a0aec0;
+}
+
+/* ── Admin Table ─────────────────────────────────────────────────────────── */
+#statsAdminContainer {
+    width: 93vw;
+    background: #fff;
+    border-radius: 4px;
+    padding: 16px;
+    border: 1px solid #e2e8f0;
+}
+
+#statsAdminTitle {
+    font-family: Work Sans !important;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #718096;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 0 0 12px 0;
+}
+
+#statsAdminTable {
     display: table;
     table-layout: fixed;
-    flex-grow: 1;
-    padding: 30px 20px 30px 20px;
-    margin-bottom: 30px;
-    background: #fff;
-    border-radius: 4px;
-    box-shadow: 0 2px 1px -1px #0003, 0 1px 1px #00000024, 0 1px 3px #0000001f;
-    border-spacing: 0px;
-  }
-  
-  /*#historyHeader {
-    display: table-header-group;
-    padding: 30px 20px 0 20px;
-    background: #fff;
-    border-radius: 4px 4px 0 0;
-    /*box-shadow: 0 2px 1px -1px #0003, 0 1px 1px #00000024, 0 1px 3px #0000001f;
-  }*/
-  
-  #statsBody {
-    display: table-body-group;
-    padding: 0 20px 30px 20px;
-    background: #fff;
-    border-radius: 0 0 4px 4px;
-    /*box-shadow: 0 2px 1px -1px #0003, 0 1px 1px #00000024, 0 1px 3px #0000001f;*/
-  }
-  
-  #statsHeaderRow {
-    display: table-row;
-    border-radius: 4px 4px 0 0;
-  }
-  
-  #totalIncHeader {
-    border-radius: 4px 0 0 0;
-  }
-  
-  .statsTotalInc {
-    border-radius: 0 4px 0 0;
-  }
-  
-  .statsTotalTime {
-    border-radius: 0 0 4px 4px;
-  }
-  
- #avgResHeader {
-    border-radius: 0 0 0 4px;
-  }
-  
-  .statsAvgRes {
-    border-radius: 0 0 4px 0;
-  }
-  
-  #statsBody tr:nth-child(odd) {
-    background-color: #f2f2f2;
-  }
-  
-  .statsRowHeader {
-    line-height: 1.5rem;
-    letter-spacing: 0.01071em;
-    display: table-cell;
-    vertical-align: inherit;
-    border-bottom: 1px solid rgb(224, 224, 224);
-    text-align: left;
-    padding: 16px;
-    font-weight: 500 !important;
-    font-size: 1rem !important;
-    font-family: Work Sans !important;
-    background: #0d478e;
-    color: #fff !important;
-  }
-  
-  .statsData {
-    line-height: 1.5rem;
-    letter-spacing: 0.01071em;
-    display: table-cell;
-    height: 100%;
-    padding-left: 16px;
-    padding-right: 16px;
-    font-weight: 400 !important;
-    font-size: 1rem !important;
-    font-family: Work Sans !important;
-    color: #000 !important;
-    position: relative;
-    height: 100%;
-  }
-  
-  .statsSpan {
-    display: flex; 
-    align-items: center;  /* Vertically center text */
-    justify-content: flex-start;
-  }
-
-  #incPerContainer {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
     width: 100%;
-    margin-bottom: 30px;
-  }
+    border-spacing: 0px;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    overflow: hidden;
+}
 
-  #incPerChart {
-    width: 60%;
-    padding-bottom: 30px;
-    border-bottom: 2px solid rgb(201, 201, 201);
-  }
+.statsAdminHeader {
+    background: #f7fafc;
+    color: #4a5568 !important;
+    font-family: Work Sans !important;
+    font-size: 0.7rem;
+    font-weight: 700 !important;
+    text-align: left;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 8px 12px;
+    border-bottom: 1px solid #e2e8f0;
+}
 
-  #incTypeContainer {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-    width: 80%;
-    margin: 0 auto;
-  }
+.statsAdminData {
+    font-family: Work Sans !important;
+    font-size: 0.875rem;
+    font-weight: 400 !important;
+    color: #1a202c !important;
+    padding: 8px 12px;
+    border-bottom: 1px solid #f0f0f0;
+}
 
-  #solByIncContainer {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    width: 50%;
-  }
+.statsAdminRow {
+    background: #fff;
+    cursor: pointer;
+    transition: background-color 100ms;
+}
 
-  #incTypeChartContainer
-    {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        width: 66%;
-        height: 100%;
-        padding-right: 30px;
-        border-right: 2px solid rgb(201, 201, 201);
-        margin-right: 30px;
-    }
+.statsAdminRowEven {
+    background: #f7fafc;
+}
 
-    #solChartTitleContainer {
-      display: flex;
-      flex-direction: row;
-      justify-content: center;
+.statsAdminRow:hover {
+    background-color: #fffff0 !important;
+}
 
-    }
+.statsAdminRowSelected {
+    background-color: #e3f2fd !important;
+}
 
-    .chartTitle {
-      font-size: 1.7rem;
-      margin: 2vh 35px;
-      font-weight: 500;
-      font-family: Work Sans !important;
-    }
+.statsAdminRowActive {
+    cursor: default !important;
+}
 
-    #solChartTitle {
-      white-space: nowrap;
-      margin: auto 5px;
-    }
-
-    #selectContainer {
-        display: flex;
-        flex-direction: row;
-        justify-content: left;
-        width: 100%;
-    }
-
-    #statsSolBar {
-        font-family: Roboto, Helvetica, Arial, sans-serif;
-        font-weight: 400;
-        font-size: 1rem;
-        line-height: 1.4375em;
-        letter-spacing: 0.00938em;
-        color: rgba(0, 0, 0, 0.87);
-        box-sizing: border-box;
-        display: inline-flex;
-        -webkit-box-align: center;
-        cursor: pointer;
-        align-items: center;
-        position: relative;
-        border-radius: 4px;
-        padding-right: 14px;
-        border: 1px solid #cacaca;
-        margin: 2px 2vw 6px 2px;
-      }
-
-      #statsSolBar:hover {
-        border-color: #000;
-      }
-
-      #statsSolBar:has(#statsSolSelect:focus) {
-        border: 3px solid #367bd0 !important;
-        margin: 0 calc(2vw - 2px) 6px 0px;
-      }
-
-      #statsSolSelect {
-        padding-block: 1px;
-        padding-inline: 2px;
-        overflow-clip-margin: 0px !important;
-        overflow: clip;
-        font: inherit;
-        letter-spacing: inherit;
-        color: currentColor;
-        border: 0px;
-        box-sizing: content-box;
-        cursor: pointer;
-        background: none;
-        height: 1.4375em;
-        margin: 0px;
-        -webkit-tap-highlight-color: transparent;
-        display: block;
-        min-width: 0px;
-        width: 100%;
-        animation-name: mui-auto-fill-cancel;
-        animation-duration: 10ms;
-        padding: 16.5px 0px 16.5px 14px;
-      }
-
-      #statsSolSelect:focus {
-        outline: 0px;
-      }
+#statsAdminTable tr.statsAdminRowSelected:hover {
+    background-color: #e3f2fd !important;
+    cursor: default;
+}

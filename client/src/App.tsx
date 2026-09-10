@@ -1,15 +1,23 @@
 import './App.css';
-import { StrictMode } from 'react'
+import { useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
+import { useMsal } from '@azure/msal-react';
 import Navbar from './components/Navbar';
+import { loadIssuesAndSolutions } from './api/issueCache';
 
 function App() {
-  return (
-    <StrictMode>
-      <Navbar />
-      <Outlet />
-    </StrictMode>
-  );
+    const { instance } = useMsal();
+
+    useEffect(() => {
+        loadIssuesAndSolutions(instance);
+    }, []);
+
+    return (
+        <>
+            <Navbar />
+            <Outlet />
+        </>
+    );
 }
 
 export default App;

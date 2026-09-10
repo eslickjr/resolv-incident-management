@@ -1,106 +1,154 @@
+import { useEffect, useState } from "react";
+import { useMsal } from "@azure/msal-react";
+import { LoanHistory as LoanHistoryType } from "../interfaces/Types";
+import { getLoanHistory } from "../api/loans";
+import Legend, { LegendItem } from "./Legend";
 
-
-import { useEffect } from "react";
 import '../styles/LoanHistory.css';
 
-const LoanHistory = () => {
-    const handleRowClick = (e: React.MouseEvent<HTMLTableRowElement>) => {
-        const row = e.currentTarget;
-        const cells = row.getElementsByClassName("historyData");
+interface LoanHistoryProps {
+    ssn?: string;
+    currentBranch?: string;
+    currentAccount?: string;
+    onLoanSelect?: (branch: string, account: string) => void;
+}
 
-        const span = (cells[2].getElementsByClassName("historySpan")[0] as HTMLElement).innerText;
-
-        console.log(span);
-    }
-
-    const adjustSpanSize = () => {
-        const cellsInRow = document.getElementsByClassName("historyData");
-        const spansInRow = document.getElementsByClassName("historySpan");
-
-        for (let span of spansInRow) {
-            (span as HTMLElement).style.height = `auto`;
-            (span as HTMLElement).style.width = `auto`;
-        }
-        
-        for (let cell of cellsInRow) {
-            const span = cell.getElementsByClassName("historySpan")[0];
-            (span as HTMLElement).style.height = `${cell.getBoundingClientRect().height}px`;
-            (span as HTMLElement).style.width = `${cell.getBoundingClientRect().width - 32}px`;
-        }
-    };
+const LoanHistory: React.FC<LoanHistoryProps> = ({
+    ssn,
+    currentBranch,
+    currentAccount,
+    onLoanSelect
+}) => {
+    const { instance } = useMsal();
+    const [history, setHistory] = useState<LoanHistoryType[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
 
     useEffect(() => {
-        adjustSpanSize();
-        window.addEventListener('resize', adjustSpanSize);
+        const fetchHistory = async () => {
+            if (!ssn) { setLoading(false); return; }
+            setLoading(true);
+            try {
+                const data = await getLoanHistory(instance, ssn);
+                setHistory(data);
+            } catch (err) {
+                console.error('Failed to load loan history:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
 
-        return () => {
-            window.removeEventListener('resize', adjustSpanSize);
-        };
-    }, []);
+        fetchHistory();
+    }, [ssn]);
 
-    const TableData = () => {
-        const dataArray = [];
-        const data = {
-            date: "12/12/2021 12:00",
-            br: "1234",
-            acc: "123456",
-            name: "John Doe",
-            amount: 1000,
-            proceeds: 1000,
-            pmtAmount: 100,
-            offType: "PO",
-            offDate: "12/12/2021",
+    useEffect(() => {
+        const scrollContainer = document.getElementById('loanHistoryScrollContainer');
+        const headerContainer = document.getElementById('loanHistoryHeaderContainer');
+        const headerTable = document.getElementById('loanHistoryHeaderTable');
+
+        if (!scrollContainer || !headerContainer || !headerTable) return;
+
+        const checkScrollbar = () => {
+            const hasScrollbar = scrollContainer.scrollHeight > scrollContainer.clientHeight;
+            const headerPadding = headerContainer.offsetWidth - headerTable.offsetWidth;
+            headerContainer.style.paddingRight = hasScrollbar ? `${headerPadding}px` : '0px';
         };
-        dataArray.push({...data});
-        data.offType = "CO";
-        dataArray.push({...data});
-        data.name = "John Doejfkldjaflkjifejiafjlekjkjfdsal";
-        data.offType = "SE";
-        dataArray.push({...data});
-        
-        return (
-            <>
-                {dataArray.map((data, index) => {
-                    return (
-                        <tr key={index} className="historyRow historyBodyRow" onClick={handleRowClick}>
-                            <td className="historyDate historyData"><span className="historySpan historyDateSpan">{data.date}</span></td>
-                            <td className="historyBr historyData"><span className="historySpan historyBrSpan">{data.br}</span></td>
-                            <td className="historyAcc historyData"><span className="historySpan historyAccSpan">{data.acc}</span></td>
-                            <td className="historyName historyData"><span className="historySpan historyNameSpan">{data.name}</span></td>
-                            <td className="historyAmount historyData"><span className="historySpan historyAmountSpan">{data.amount}</span></td>
-                            <td className="historyProceeds historyData"><span className="historySpan historyProceedsSpan">{data.proceeds}</span></td>
-                            <td className="historyPmtAmount historyData"><span className="historySpan historyPmtAmountSpan">{data.pmtAmount}</span></td>
-                            <td className="historyOff historyData"><span className="historySpan historyOffSpan">{data.offType === "PO" ? "Paidoff" : data.offType === "CO" ? "ChargedOff" : "Settled"}: {data.offDate}</span></td>
-                        </tr>
-                    );
-                })}
-                </>
-            );
-        };
+
+        checkScrollbar();
+        window.addEventListener('resize', checkScrollbar);
+
+        return () => window.removeEventListener('resize', checkScrollbar);
+    }, [history]);
+
+    const loanLegendItems: LegendItem[] = [
+        { color: '#ffffff', label: 'Loan' },
+        { color: '#ebf8ff', label: 'Currently viewing loan' },
+        { color: '#fffff0', label: 'Hovered row' },
+    ];
+
+    const formatCurrency = (val?: number | null): string =>
+        val != null ? `$${val.toLocaleString('en-US', { minimumFractionDigits: 2 })}` : '—';
+
+    const formatDate = (isoString?: string): string => {
+        if (!isoString) return '—';
+
+        const d = new Date(isoString);
+        return d.toLocaleDateString('en-US', {
+            month: '2-digit',
+            day: '2-digit',
+            year: 'numeric'
+        });
+    };
+
+    const isActiveLoan = (row: LoanHistoryType): boolean => {
+        const normalizedRowBranch = row.branchCode?.replace(/^0+/, '');
+        const normalizedCurrentBranch = currentBranch?.replace(/^0+/, '');
+        return normalizedRowBranch === normalizedCurrentBranch && row.accountNumber === currentAccount;
+    };
+
+    const handleRowClick = (row: LoanHistoryType) => {
+        if (isActiveLoan(row)) return;
+        if (onLoanSelect && row.branchCode && row.accountNumber) {
+            onLoanSelect(row.branchCode, row.accountNumber);
+        }
+    };
 
     return (
         <div>
             <div id="loanHistoryTableContainer">
-                <table id="loanHistoryTable">
-                    <thead id="historyHeader">
-                        <tr id="historyHeaderRow" className="historyHeaderRow historyRow">
-                            <th id="dateHeader" className="historyColHeader historyDate"><span className="historySpan">Date &<br />Time</span></th>
-                            <th id="brHeader" className="historyColHeader historyBr"><span className="historySpan">Branch</span></th>
-                            <th id="accHeader" className="historyColHeader historyAcc"><span className="historySpan">Account</span></th>
-                            <th id="nameHeader" className="historyColHeader historyName"><span className="historySpan">Name</span></th>
-                            <th id="amountHeader" className="historyColHeader historyAmount"><span className="historySpan">Loan Amount</span></th>
-                            <th id="proceedsHeader" className="historyColHeader historyProceeds"><span className="historySpan">Proceeds</span></th>
-                            <th id="pmtAmountHeader" className="historyColHeader historyPmtAmount"><span className="historySpan">Payment Amount</span></th>
-                            <th id="offHeader" className="historyColHeader historyOff"><span className="historySpan">Closed Date</span></th>
-                        </tr>
-                    </thead>
-                    <tbody id="historyBody">
-                        {TableData()}
-                    </tbody>
-                </table>
+                <div id="loanHistoryTableWrapper">
+                    <div id="loanHistoryHeaderContainer">
+                        <Legend items={loanLegendItems} />
+                        <table id="loanHistoryHeaderTable">
+                            <thead id="loanHistoryHeader">
+                                <tr id="loanHistoryHeaderRow" className="loanHistoryHeaderRow loanHistoryRow">
+                                    <th className="loanHistoryColHeader loanHistoryDate"><span className="loanHistorySpan">Date &<br />Time</span></th>
+                                    <th className="loanHistoryColHeader loanHistoryBr"><span className="loanHistorySpan">Branch</span></th>
+                                    <th className="loanHistoryColHeader loanHistoryAcc"><span className="loanHistorySpan">Account</span></th>
+                                    <th className="loanHistoryColHeader loanHistoryName"><span className="loanHistorySpan">Name</span></th>
+                                    <th className="loanHistoryColHeader loanHistoryAmount"><span className="loanHistorySpan">Loan Amount</span></th>
+                                    <th className="loanHistoryColHeader loanHistoryProceeds"><span className="loanHistorySpan">Proceeds</span></th>
+                                    <th className="loanHistoryColHeader loanHistoryPmtAmount"><span className="loanHistorySpan">Payment Amount</span></th>
+                                    <th className="loanHistoryColHeader loanHistoryOff"><span className="loanHistorySpan">Closed Date</span></th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+                    <div id="loanHistoryScrollContainer">
+                        <table id="loanHistoryScrollTable">
+                            <tbody id="loanHistoryBody">
+                                {loading ? (
+                                    <tr><td colSpan={8}>Loading...</td></tr>
+                                ) : history.length === 0 ? (
+                                    <tr><td colSpan={8}>No loan history found.</td></tr>
+                                ) : (
+                                    history.map((row, index) => {
+                                        const active = isActiveLoan(row);
+                                        return (
+                                            <tr
+                                                key={index}
+                                                className={`loanHistoryRow loanHistoryBodyRow${active ? ' loanHistoryActiveRow' : ''}`}
+                                                onClick={() => handleRowClick(row)}
+                                                style={{ cursor: active ? 'default' : 'pointer' }}
+                                            >
+                                                <td className="loanHistoryDate loanHistoryData"><span className="loanHistorySpan loanHistoryDateSpan">{formatDate(row.originationDate)}</span></td>
+                                                <td className="loanHistoryBr loanHistoryData"><span className="loanHistorySpan loanHistoryBrSpan">{row.branchCode}</span></td>
+                                                <td className="loanHistoryAcc loanHistoryData"><span className="loanHistorySpan loanHistoryAccSpan">{row.accountNumber ?? '—'}</span></td>
+                                                <td className="loanHistoryName loanHistoryData"><span className="loanHistorySpan loanHistoryNameSpan">{row.firstName} {row.lastName}</span></td>
+                                                <td className="loanHistoryAmount loanHistoryData"><span className="loanHistorySpan loanHistoryAmountSpan">{formatCurrency(row.loanAmount)}</span></td>
+                                                <td className="loanHistoryProceeds loanHistoryData"><span className="loanHistorySpan loanHistoryProceedsSpan">{formatCurrency(row.netProceeds)}</span></td>
+                                                <td className="loanHistoryPmtAmount loanHistoryData"><span className="loanHistorySpan loanHistoryPmtAmountSpan">{formatCurrency(row.scheduledPayment)}</span></td>
+                                                <td className="loanHistoryOff loanHistoryData"><span className="loanHistorySpan loanHistoryOffSpan">{row.lastPaymentDate ?? ''}</span></td>
+                                            </tr>
+                                        );
+                                    })
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     );
-}
+};
 
 export default LoanHistory;

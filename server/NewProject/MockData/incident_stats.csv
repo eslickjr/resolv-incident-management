@@ -1,0 +1,13 @@
+StatId,IncidentId,Username,Opened,TimeSpentSeconds,Closed
+1,1,jsmith,true,1320,true
+2,2,adavis,true,1500,true
+3,3,jsmith,true,600,true
+4,4,bwilson,true,4500,true
+5,5,adavis,true,600,true
+6,6,jsmith,true,480,false
+7,7,bwilson,true,900,true
+8,8,adavis,true,900,true
+9,9,jsmith,true,900,true
+10,10,bwilson,true,1500,true
+11,4,jsmith,false,600,false
+12,8,jsmith,false,300,false

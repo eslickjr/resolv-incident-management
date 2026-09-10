@@ -1,39 +1,71 @@
-#customerCareIncidents {
-  background-color: #f5f5f5;
+#CustomerCareIncidents {
+  background-color: #f7f8fa;
   height: 100%;
   width: 100%;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  padding-top: 8px;
 }
 
-#searchTitle {
-  text-align: center;
-  font-size: 1.7rem;
-  margin: 2vh 35px;
-  font-weight: 500;
+#searchTitle, #incHistoryTitle  {
+  font-size: 0.7rem;
+  font-weight: 700;
   font-family: Work Sans !important;
+  color: #718096;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 0 0 8px 0;
+  width: calc(93vw + 40px);
+  text-align: center;
+  padding-left: 4px;
 }
 
-#historyTitle {
-  text-align: center;
-  font-size: 1.7rem;
-  margin: 2vh 35px;
-  font-weight: 500;
+#loanTitle, #loanHistoryTitle {
+  font-size: 0.7rem;
+  font-weight: 700;
   font-family: Work Sans !important;
+  color: #718096;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 0 0 8px 0;
+  width: calc(93vw + 40px);
+  text-align: left;
+  padding-left: 4px;
 }
 
-#loanTitle {
-  text-align: center;
-  font-size: 1.7rem;
-  margin: 2vh 35px;
-  font-weight: 500;
-  font-family: Work Sans !important;
+#homeStatsStrip {
+    display: flex;
+    flex-direction: row;
+    gap: 12px;
+    width: calc(93vw + 40px);
+    margin-bottom: 16px;
 }
 
-#loanHistoryTitle {
-  text-align: center;
-  font-size: 1.7rem;
-  margin: 2vh 35px;
-  font-weight: 500;
-  font-family: Work Sans !important;
+.homeStatCard {
+    flex: 1;
+    background: #fff;
+    border-radius: 4px;
+    padding: 12px 16px;
+    border: 1px solid #e2e8f0;
+    border-left: 3px solid #0d478e;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.homeStatLabel {
+    font-family: Work Sans !important;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #718096;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.homeStatValue {
+    font-family: Work Sans !important;
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #1a202c;
 }

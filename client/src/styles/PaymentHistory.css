@@ -3,107 +3,93 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    margin-bottom: 30px;
-  }
-  
-  #pmtHistoryTable {
+    margin-bottom: 0;
+}
+
+#pmtHistoryTableWrapper {
+    display: flex;
+    flex-direction: column;
+    width: calc(90% - 0px);
+    margin: 0 auto;
+}
+
+#pmtHistoryHeaderContainer {
+    overflow: hidden;
+}
+
+#pmtHistoryTable {
     display: table;
     table-layout: fixed;
-    flex-grow: 1;
-    width: 80%;
-    padding: 30px 20px 30px 20px;
-    margin-bottom: 30px;
-    background: #fff;
-    border-radius: 4px;
-    box-shadow: 0 2px 1px -1px #0003, 0 1px 1px #00000024, 0 1px 3px #0000001f;
+    width: 100%;
     border-spacing: 0px;
-  }
-  
-  #pmtHistoryHeader {
+    margin-bottom: -1px;
+}
+
+#pmtHistoryScrollContainer {
+    width: 100%;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+#pmtHistoryScrollTable {
+    display: table;
+    table-layout: fixed;
+    width: 100%;
+    background: #fff;
+    border-spacing: 0px;
+    border-top: 1px solid #e2e8f0;
+}
+
+#pmtHistoryHeader {
     display: table-header-group;
-    padding: 30px 20px 0 20px;
-    background: #fff;
-    border-radius: 4px 4px 0 0;
-    /*box-shadow: 0 2px 1px -1px #0003, 0 1px 1px #00000024, 0 1px 3px #0000001f;*/
-  }
-  
-  #pmtHistoryBody {
+    background: #f7fafc;
+}
+
+#pmtHistoryBody {
     display: table-body-group;
-    padding: 0 20px 30px 20px;
     background: #fff;
-    border-radius: 0 0 4px 4px;
-    /*box-shadow: 0 2px 1px -1px #0003, 0 1px 1px #00000024, 0 1px 3px #0000001f;*/
-  }
-  
-  #pmtHistoryHeaderRow {
-    display: table-row;
-    border-radius: 4px 4px 0 0;
-  }
-  
-  #pmtDateHeader {
-    border-radius: 4px 0 0 0;
-  }
+}
 
-  #chargeHeader {
-    border-radius: 0 4px 0 0;
-  }
-  
-  #pmtHistoryBody tr:last-child {
-    border-radius: 0 0 4px 4px;
-  }
-  
-  #pmtHistoryBody tr:last-child td:first-child {
-    border-radius: 0 0 0 4px;
-  }
-  
-  #pmtHistoryBody tr:last-child td:last-child {
-    border-radius: 0 0 4px 0;
-  }
-  
-  #pmtHistoryBody tr:nth-child(even) {
-    background-color: #f2f2f2;
-  }
-  
-  #pmtHistoryBody tr:hover {
-    background-color: #fafad8;
-    cursor: default;
-  }
-  
-  .pmtHistoryColHeader {
+#pmtHistoryHeaderRow { display: table-row; }
+
+#pmtHistoryBody tr:nth-child(even) { background-color: #f7fafc; }
+
+.pmtHistoryColHeader {
     display: table-cell;
-    vertical-align: inherit;
-    border-bottom: 1px solid rgb(224, 224, 224);
-    background: #0d478e;
-  }
-  
-  .pmtHistoryData {
-    line-height: 1.5rem;
-    letter-spacing: 0.01071em;
+    vertical-align: middle;
+    border-bottom: 1px solid #e2e8f0;
+    background: #f7fafc;
+}
+
+.pmtHistoryData {
     display: table-cell;
-    height: 100%;
-    padding-left: 16px;
-    padding-right: 16px;
+    padding: 7px 12px;
     font-weight: 400 !important;
-    font-size: 1rem !important;
+    font-size: 0.875rem !important;
     font-family: Work Sans !important;
-    color: #000 !important;
+    color: #1a202c !important;
     position: relative;
+    border-bottom: 1px solid #f0f0f0;
     width: calc(100% / 9);
-  }
-  
-  .pmtHistorySpan {
-    display: flex; 
-    align-items: center;  /* Vertically center text */
-    justify-content: flex-start;
-  }
+}
 
-  .pmtHistoryColHeader .pmtHistorySpan {
-    line-height: 1.5rem;
-    letter-spacing: 0.01071em;
-    text-align: left;
-    padding: 16px;
-    font-weight: 500 !important;
-    font-size: 1rem !important;
+.pmtHistorySpan {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.pmtHistoryColHeader .pmtHistorySpan {
+    padding: 8px 12px;
+    font-weight: 700 !important;
+    font-size: 0.7rem !important;
     font-family: Work Sans !important;
-    color: #fff !important;
-  }
+    color: #4a5568 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+#pmtHistoryScrollContainer::-webkit-scrollbar { width: 6px; }
+#pmtHistoryScrollContainer::-webkit-scrollbar-track { background: #f7fafc; }
+#pmtHistoryScrollContainer::-webkit-scrollbar-thumb { background-color: #cbd5e0; border-radius: 4px; }
+#pmtHistoryScrollContainer::-webkit-scrollbar-thumb:hover { background-color: #a0aec0; }

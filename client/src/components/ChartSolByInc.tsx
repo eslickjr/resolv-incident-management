@@ -1,47 +1,57 @@
+import { useState } from "react";
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend } from "recharts";
+import { SolutionsByIssueDto } from "../interfaces/Types";
 
-const data = [
-  { name: "Group A", value: 400 },
-  { name: "Group B", value: 300 },
-  { name: "Group C", value: 300 },
-  { name: "Group D", value: 200 },
-];
+const COLORS = ["#0d478e", "#1976d2", "#42a5f5", "#90caf9", "#FF8042", "#AA336A"];
 
-const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
+interface ChartProps {
+    data: SolutionsByIssueDto[];
+}
 
-const MyPieChart = () => (
-    <>
-        <div id="solChartTitleContainer">
-            <h2 id="solChartTitle" className="chartTitle">Solutions for</h2>
-            <div id="selectContainer">
-                <div id="statsSolBar">
-                    <select id="statsSolSelect" >
-                        <option value="1">Online Account</option>
-                        <option value="2">Payment</option>
-                        <option value="3">Credit Score</option>
-                    </select>
-                </div>
-            </div>
-        </div>
-        <ResponsiveContainer width="100%" aspect={1}>
-            <PieChart width={400} height={400}>
-                <Pie
-                data={data}
-                cx="50%"
-                cy="50%"
-                outerRadius={120}
-                fill="#8884d8"
-                dataKey="value"
+const ChartSolByInc = ({ data }: ChartProps) => {
+    const [selectedIssue, setSelectedIssue] = useState<string>('');
+
+    const issues = [...new Set(data.map(d => d.issue))];
+
+    const chartData = (selectedIssue
+        ? data.filter(d => d.issue === selectedIssue)
+        : data
+    ).map(d => ({ name: d.solution, value: d.count }));
+
+    return (
+        <>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+                <span className="chartTitle" style={{ margin: 0 }}>Solutions by Issue</span>
+                <select
+                    id="issueFilter"
+                    value={selectedIssue}
+                    onChange={e => setSelectedIssue(e.target.value)}
                 >
-                {data.map((_, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-                </Pie>
-                <Tooltip />
-                <Legend />
-            </PieChart>
-        </ResponsiveContainer>
-    </>
-);
+                    <option value="">All Issues</option>
+                    {issues.map(i => (
+                        <option key={i} value={i}>{i}</option>
+                    ))}
+                </select>
+            </div>
+            <ResponsiveContainer width="100%" aspect={1.2}>
+                <PieChart>
+                    <Pie
+                        data={chartData}
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={110}
+                        dataKey="value"
+                    >
+                        {chartData.map((_, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                    </Pie>
+                    <Tooltip contentStyle={{ fontFamily: 'Work Sans', fontSize: 12 }} />
+                    <Legend wrapperStyle={{ fontFamily: 'Work Sans', fontSize: 12 }} />
+                </PieChart>
+            </ResponsiveContainer>
+        </>
+    );
+};
 
-export default MyPieChart;
+export default ChartSolByInc;

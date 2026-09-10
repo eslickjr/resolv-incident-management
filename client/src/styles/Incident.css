@@ -1,271 +1,333 @@
 
-  
-  #incTitle {
-    text-align: center;
-    font-size: 1.7rem;
-    margin: 2vh 35px;
-    font-weight: 500;
-    font-family: Work Sans !important;
-  }
-  
-  #outerIncContainer {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 30px;
-  }
-  
-  #incContainer{
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    width: 93vw;
-    padding: 30px 20px 30px 20px;
-    background: #fff;
-    border-radius: 4px;
-    box-shadow: 0 2px 1px -1px #0003, 0 1px 1px #00000024, 0 1px 3px #0000001f;
-  }
 
-  #incForm {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: 1fr 1fr;
-    width: 80%;
-  }
-
-  .incFormCell {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-evenly;
-  }
-/*
-  #incBranchCell {
-    display: flex;
-    flex-direction: column;
-    justify-content: left;
-  }*/
-
-  #incBranchBarContainer {
-    display: flex;
-    flex-direction: row;
-    justify-content: left;
-  }
-
-  #incADContainer {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-evenly;
-    width: 100%;
-  }
-  
-  .incBar {
-    font-family: Roboto, Helvetica, Arial, sans-serif;
-    font-weight: 400;
-    font-size: 1rem;
-    line-height: 1.4375em;
-    letter-spacing: 0.00938em;
-    color: rgba(0, 0, 0, 0.87);
-    box-sizing: border-box;
-    cursor: text;
-    display: inline-flex;
-    -webkit-box-align: center;
-    align-items: center;
-    position: relative;
-    border-radius: 4px;
-    padding-right: 14px;
-    border: 1px solid #cacaca;
-    margin: 1px 2vw 5px 1px;
-  }
-  
-  .incBar:hover:not(#incSolBar) {
-    border-color: #000;
-  }
-  .incBar:has(.incInput:focus) + .incSpan {
-    color: #367bd0;
-    font-weight: bold;
-  }
-  
-  .incBar:has(.incInput:focus) {
-    border: 2px solid #367bd0 !important;
-    margin: 0 calc(2vw - 1px) 4px 0;
-  }
-
-#incBranchBar {
-    width: 14%;
+#outerIncContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 16px;
 }
 
-#incPhoneBar{
-    width: 30%;
+#incContainer {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  width: calc(93vw + 40px);
+  padding: 20px;
+  background: #fff;
+  border-radius: 0 4px 4px 4px;
+  border: 1px solid #e2e8f0;
 }
 
-#incFNBar, #incLNBar {
-    width: 60%;
+#incForm {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  width: 80%;
 }
 
-#incIssueBar, #incSolBar {
-    width: 90%;
+.incFormCell {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
 }
 
-#incSSNBar {
-    width: 26%;
+#incBranchBarContainer {
+  display: flex;
+  flex-direction: row;
+  justify-content: left;
+  align-items: center;
 }
+
+#incADContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  width: 100%;
+}
+
+.incBar {
+  position: relative;
+  font-family: Work Sans, sans-serif;
+  font-weight: 400;
+  font-size: 0.875rem;
+  color: #1a202c;
+  box-sizing: border-box;
+  cursor: text;
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  border-radius: 4px;
+  padding-right: 14px;
+  border: 1px solid #e2e8f0;
+  margin: 1px 2vw 5px 1px;
+  transition: border-color 150ms;
+}
+
+.incBar::after {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 14px;
+  width: auto;
+  height: auto;
+  padding: 0 2px;
+  color: #a0aec0;
+  font-size: 0.8rem;
+  margin: 0;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  background-color: #fff;
+  pointer-events: none;
+  transition: top 200ms ease, font-size 200ms ease, transform 200ms ease;
+}
+
+.incBar:has(.incInput:not(:placeholder-shown))::after {
+  top: -8px;
+  transform: none;
+  color: #718096;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.incBar:has(.incInput:not(:placeholder-shown)):hover:not(:has(.incInput:focus))::after {
+  color: #4a5568;
+}
+
+.incBar:has(.incInput:focus)::after {
+  top: -8px;
+  transform: none;
+  color: #0d478e;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.incBar:hover:not(#incSolBar) {
+  border-color: #a0aec0;
+}
+
+.incBar:has(.incInput:focus) {
+  border-color: #0d478e !important;
+  box-shadow: 0 0 0 2px rgba(13, 71, 142, 0.15);
+}
+
+#incBranchBar { width: 14%; }
+#incBranchBar::after { content: "Branch"; }
+
+#incPhoneBar { width: 30%; }
+#incPhoneBar::after { content: "Phone"; }
+
+#incFNBar, #incLNBar { width: 60%; }
+#incFNBar::after { content: "First Name"; }
+#incLNBar::after { content: "Last Name"; }
+
+#incIssueBar, #incSolBar { width: 90%; }
+#incIssueBar::after { content: "Issue"; top: -8px; transform: none; font-size: 0.7rem; font-weight: 600; color: #718096; }
+#incSolBar::after   { content: "Solution"; top: -8px; transform: none; font-size: 0.7rem; font-weight: 600; color: #718096; }
+
+#incSSNBar { width: 26%; }
+#incSSNBar::after { content: "SSN"; }
 
 #incADBar {
-    width: 200%;
-    padding: 16.5px 14px 16.5px 0;
-    margin: 10px 2vw 10px 1px;
+  width: 200%;
+  padding: 12px 14px 12px 0;
+  margin: 8px 2vw 8px 1px;
 }
-
-#incADBar:has(.incInput:focus) {
-    border: 2px solid #367bd0 !important;
-    margin: 9px 2vw 9px 0;
-}
-
-  .incSpan {
-    color: #cacaca;
-    font-size: 16px;
-    margin: 0;
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    position: absolute;
-    background-color: #fff;
-    border: 2px solid #fff;
-    pointer-events: none;
-}
-  
-  .incInput {
-    padding-block: 1px;
-    padding-inline: 2px;
-    overflow-clip-margin: 0px !important;
-    overflow: clip;
-    font: inherit;
-    letter-spacing: inherit;
-    color: currentColor;
-    border: 0px;
-    box-sizing: content-box;
-    background: none;
-    height: 1.4375em;
-    margin: 0px;
-    -webkit-tap-highlight-color: transparent;
-    display: block;
-    min-width: 0px;
-    width: 100%;
-    animation-name: mui-auto-fill-cancel;
-    animation-duration: 10ms;
-    padding: 16.5px 0px 16.5px 14px;
-  }
-  
-  .incInput:focus {
-    outline: 0px;
-  }
-
-  #incAD {
-    height: calc(1.4375em * 6);
-    overflow-y: auto;
-    padding: 0 0 0 14px;
-    resize: none;
-}
+#incADBar::after { content: "Additional Details..."; top: -8px; transform: none; font-size: 0.7rem; font-weight: 600; color: #718096; }
+#incADBar:has(.incInput:focus) { border-color: #0d478e !important; }
 
 .incSpan {
-    color: #cacaca;
-    font-size: 16px;
-    margin: 0;
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    position: absolute;
-    background-color: #fff;
-    border: 2px solid #fff;
-    pointer-events: none;
+  color: #a0aec0;
+  font-size: 0.8rem;
+  margin: 0;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  position: absolute;
+  background-color: #fff;
+  border: 2px solid #fff;
+  pointer-events: none;
 }
 
-/*.incBar:not(:hover) + .incSpan {
-    color: #cacaca;
-  }*/
-
-#incIssueBar:hover + #incIssueSpan {
-    color: #000;
+.incInput {
+  font: inherit;
+  font-size: 0.875rem;
+  letter-spacing: inherit;
+  color: #1a202c;
+  border: 0px;
+  box-sizing: content-box;
+  background: none;
+  height: 1.4375em;
+  margin: 0px;
+  display: block;
+  min-width: 0px;
+  width: 100%;
+  padding: 14px 0px 14px 14px;
 }
 
-.defaultValue {
-    display: none;
+.incInput:focus { outline: 0px; }
+
+#incAD {
+  height: calc(1.4375em * 5);
+  overflow-y: auto;
+  padding: 0 0 0 14px;
+  resize: none;
 }
+
+.defaultValue { display: none; }
 
 #incCloseContainer {
-    display: flex;
-    flex-direction: row;
-    justify-content: left;
-    align-items: center;
+  display: flex;
+  flex-direction: row;
+  justify-content: left;
+  align-items: center;
+  margin-top: 8px;
 }
-  
-  .incButton {
-    display: inline-flex;
-    -webkit-box-align: center;
+
+.incButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-family: Work Sans, sans-serif;
+  font-weight: 600;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #fff;
+  background-color: #0d478e;
+  border: none;
+  border-radius: 4px;
+  padding: 7px 16px;
+  margin-right: 8px;
+  transition: background-color 150ms;
+}
+
+.incButton:hover { background-color: #0a3a72; }
+.incButton:active { background-color: #082d58; }
+
+#incBranchSearch { margin: 1px 0 5px 0; }
+
+.errorSpan {
+  color: #c53030;
+  font-size: 0.75rem;
+  margin: 4px 4px 2px 0;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  z-index: 10;
+  background-color: transparent;
+}
+
+#incCloseSpan {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin: 0 10px;
+  white-space: nowrap;
+  font-size: 0.75rem;
+  color: #c53030;
+}
+
+/* Read-only mode */
+.incFormReadOnly .incBar:has(.incInput:disabled) {
+  color: #a0aec0;
+  background-color: #f7fafc;
+  cursor: default;
+}
+
+.incFormReadOnly .incBar:has(.incInput:disabled)::after {
+  color: #a0aec0;
+  background: linear-gradient(to bottom, #fff, #fff 50%, #f7fafc 50%, #f7fafc 100%);
+}
+
+.incFormReadOnly .incBar:has(.incInput:disabled):hover:not(#incSolBar) { border-color: #e2e8f0; }
+.incFormReadOnly #incSolBar:hover { border-color: #e2e8f0; }
+.incFormReadOnly .incBar:has(.incInput:disabled):hover:not(#incSolBar)::after { color: #a0aec0; }
+.incFormReadOnly .incBar:has(.incInput:not(:placeholder-shown)):hover:not(:has(.incInput:focus))::after { color: #a0aec0; }
+
+#incSSNToggle {
+  cursor: pointer;
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #718096;
+  transition: color 150ms;
+}
+
+#incSSNToggle:hover { color: #1a202c; }
+#incSSNToggle svg { display: block; }
+
+#incCallTipsContainer {
+    grid-column: 1 / -1;
+    margin: 0 1px 8px 1px;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+#incCallTipsHeader {
+    display: flex;
+    justify-content: space-between;
     align-items: center;
-    -webkit-box-pack: center;
-    justify-content: center;
-    position: relative;
-    box-sizing: border-box;
-    -webkit-tap-highlight-color: transparent;
+    padding: 8px 14px;
+    background: #f7fafc;
+    border-bottom: 1px solid #e2e8f0;
     cursor: pointer;
     user-select: none;
-    vertical-align: middle;
-    appearance: none;
-    font-family: Roboto, Helvetica, Arial, sans-serif;
-    font-weight: 500;
-    font-size: 0.875rem;
-    line-height: 1.75;
-    letter-spacing: 0.02857em;
+}
+
+#incCallTipsTitle {
+    font-family: Work Sans !important;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #718096;
     text-transform: uppercase;
-    min-width: 64px;
-    color: white;
-    background-color: rgb(25, 118, 210);
-    box-shadow: rgba(0, 0, 0, 0.2) 0px 3px 1px -2px, rgba(0, 0, 0, 0.14) 0px 2px 2px 0px, rgba(0, 0, 0, 0.12) 0px 1px 5px 0px;
-    outline: 0px;
-    border-style: initial;
-    border-color: initial;
-    border-image: initial;
-    margin: 0px;
-    text-decoration: none;
-    padding: 6px 16px;
-    border-radius: 4px;
-    transition: background-color 250ms cubic-bezier(0.4, 0, 0.2, 1), box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1), border-color 250ms cubic-bezier(0.4, 0, 0.2, 1), color 250ms cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  
-  .incButton:hover {
-    text-decoration: none;
-    background-color: rgb(21, 101, 192);
-    box-shadow: rgba(0, 0, 0, 0.2) 0px 2px 4px -1px, rgba(0, 0, 0, 0.14) 0px 4px 5px 0px, rgba(0, 0, 0, 0.12) 0px 1px 10px 0px;
-  }
-  
-  .incButton:active {
-    background-color: rgb(17, 82, 147);
-    box-shadow: rgba(0, 0, 0, 0.2) 0px 5px 5px -3px, rgba(0, 0, 0, 0.14) 0px 8px 10px 1px, rgba(0, 0, 0, 0.12) 0px 3px 14px 2px;
-  }
+    letter-spacing: 0.08em;
+}
 
-  #incBranchSearch {
-    margin: 1px 0 10px 0;
-  }
+#incCallTipsToggle {
+    font-size: 0.6rem;
+    color: #a0aec0;
+}
 
-  .errorSpan {
-    color: #f00;
-    font-size: 0.8rem;
-    margin: 10px 4px 2px 0;
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    z-index: 10;
-    background-color: transparent;
-  }
-
-  #incCloseSpan {
-    height: 100%;
+#incCallTipsList {
+    list-style: none;
+    margin: 0;
+    padding: 8px 14px;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    margin: 0 10px;
-    white-space: nowrap;
-  }
+    gap: 0;
+    counter-reset: tip-counter;
+}
+
+.incCallTip {
+    position: relative;
+    font-family: Work Sans !important;
+    font-size: 0.875rem;
+    color: #1a202c;
+    padding: 6px 10px;
+    background: #ebf8ff;
+    border-left: 3px solid #0d478e;
+    border-radius: 0 4px 4px 0;
+    line-height: 1.5;
+    counter-increment: tip-counter;
+}
+
+.incCallTip::before {
+    content: counter(tip-counter);
+    position: absolute;
+    left: -2px;
+    top: 3px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #0d478e;
+    width: 16px;
+    text-align: center;
+}

@@ -1,0 +1,355 @@
+#paymentProcessorContainer {
+    width: 90%;
+    margin:  12px auto;
+    background: #fff;
+    border-radius: 4px;
+    overflow: hidden;
+    gap: 16px;
+}
+
+.paymentProcessorSplit {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+}
+
+#paymentProcessorDivider {
+    width: 1px;
+    background: #e2e8f0;
+    flex-shrink: 0;
+    align-self: stretch;
+}
+
+.paymentSection {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-self: flex-start;
+    min-width: 0;
+    width: 100%;
+    height: fit-content;
+    border: 1px solid #e2e8f0;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+}
+
+.paymentSectionHeader {
+    padding: 8px 16px;
+    background: #f7fafc;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.paymentSectionTitle {
+    font-family: Work Sans !important;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #718096;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+/* ── Regular Payment ─────────────────────────────────────────────────────── */
+#paymentBody {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+#paymentMethodToggle {
+    display: flex;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    overflow: hidden;
+    width: fit-content;
+}
+
+.paymentMethodBtn {
+    padding: 6px 16px;
+    font-family: Work Sans !important;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: #fff;
+    color: #4a5568;
+    border: none;
+    border-right: 1px solid #e2e8f0;
+    cursor: pointer;
+    transition: background-color 150ms, color 150ms;
+}
+
+.paymentMethodBtn:last-child { border-right: none; }
+.paymentMethodBtn:hover { background: #f7fafc; }
+.paymentMethodSelected { background: #0d478e !important; color: #fff !important; cursor: default; }
+
+#paymentTopRow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+#payoffBtn {
+    font-family: Work Sans !important;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #0d478e;
+    background: #ebf8ff;
+    border: 1px solid #0d478e;
+    border-radius: 4px;
+    padding: 6px 12px;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background-color 150ms;
+}
+
+#payoffBtn:hover { background: #bee3f8; }
+
+#useAccountInfoRow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    grid-column: 1 / -1;
+}
+
+#useAccountInfoLabel {
+    font-family: Work Sans !important;
+    font-size: 0.8rem;
+    color: #4a5568;
+    cursor: pointer;
+}
+
+#useAccountInfo {
+    cursor: pointer;
+    accent-color: #0d478e;
+}
+
+#paymentFields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.paymentField {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.paymentLabel {
+    font-family: Work Sans !important;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #4a5568;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.paymentInput {
+    font-family: Work Sans !important;
+    font-size: 0.875rem;
+    color: #1a202c;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    padding: 7px 10px;
+    transition: border-color 150ms;
+    background: #fff;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.paymentInput:hover { border-color: #a0aec0; }
+.paymentInput:focus { outline: none; border-color: #0d478e; box-shadow: 0 0 0 2px rgba(13,71,142,0.15); }
+
+#paymentAmountContainer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#paymentAmountRow {
+    display: flex;
+    align-items: center;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    overflow: hidden;
+    transition: border-color 150ms;
+}
+
+#paymentAmountRow:focus-within { border-color: #0d478e; box-shadow: 0 0 0 2px rgba(13,71,142,0.15); }
+
+#paymentDollar, #settlementDollar {
+    padding: 7px 8px;
+    background: #f7fafc;
+    border-right: 1px solid #e2e8f0;
+    font-family: Work Sans !important;
+    font-size: 0.875rem;
+    color: #718096;
+    flex-shrink: 0;
+}
+
+#paymentAmountRow .paymentInput {
+    border: none;
+    border-radius: 0;
+    box-shadow: none !important;
+}
+
+#paymentBody .paymentError {
+    font-family: Work Sans;
+    font-size: 0.75rem;
+    color: #c53030;
+}
+
+#paymentSubmit, #settlementSubmit {
+    align-self: flex-start;
+    font-family: Work Sans !important;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #fff;
+    background: #0d478e;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 20px;
+    cursor: pointer;
+    transition: background-color 150ms;
+}
+
+#paymentSubmit:hover:not(:disabled), #settlementSubmit:hover:not(:disabled) { background: #0a3a72; }
+#paymentSubmit:disabled, #settlementSubmit:disabled { background: #a0aec0; cursor: default; }
+
+/* ── Settlement Calculator ───────────────────────────────────────────────── */
+#settlementBody {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+#settlementPayoffRow, #settlementRange {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.settlementInfoLabel, .settlementRangeLabel {
+    font-family: Work Sans !important;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #4a5568;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    width: 130px;
+    flex-shrink: 0;
+}
+
+.settlementInfoValue, .settlementRangeValue {
+    font-family: Work Sans !important;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #1a202c;
+}
+
+#settlementTiers {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+}
+
+.settlementTier {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    background: #f7fafc;
+}
+
+.settlementTier:has(.settlementTierBtnSelected) {
+    border-color: #0d478e;
+    background: #ebf8ff;
+}
+
+.settlementTierBtnSelected {
+    background: #082d58 !important;
+}
+
+.settlementTierLabel {
+    font-family: Work Sans !important;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #718096;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.settlementTierAmount {
+    font-family: Work Sans !important;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #0d478e;
+}
+
+.settlementTierSavings {
+    font-family: Work Sans !important;
+    font-size: 0.7rem;
+    color: #38a169;
+    font-weight: 500;
+}
+
+.settlementTierBtn {
+    margin-top: 4px;
+    font-family: Work Sans !important;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #fff;
+    background: #0d478e;
+    border: none;
+    border-radius: 4px;
+    padding: 5px 12px;
+    cursor: pointer;
+    width: 100%;
+}
+
+.settlementTierBtn:disabled { background: #a0aec0; cursor: default; }
+
+#settlementCustomRow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+#settlementCustomInput {
+    display: flex;
+    align-items: center;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+#settlementCustomInput:focus-within { border-color: #0d478e; box-shadow: 0 0 0 2px rgba(13,71,142,0.15); }
+
+#settlementCustom {
+    font-family: Work Sans !important;
+    font-size: 0.875rem;
+    color: #1a202c;
+    border: none;
+    padding: 7px 10px;
+    width: 120px;
+}
+
+#settlementCustom:focus { outline: none; }
+
+.settlementError {
+    font-family: Work Sans !important;
+    font-size: 0.75rem;
+    color: #c53030;
+}
