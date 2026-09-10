@@ -1,4 +1,4 @@
-# resolve-incident-management
+# Resolve Incident Management
   
   ## Description
   This allows you to track customers who have recently called in and ties them to any existing accounts they may or may not have. It also supplies stats on resolution times and incidents types for the user to view. ![screenshot](https://github.com/eslickjr/customerCareIncidents/raw/main/client/src/assets/Resolv%20Dash.png) 
