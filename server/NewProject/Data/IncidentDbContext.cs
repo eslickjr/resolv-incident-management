@@ -4,8 +4,10 @@ using System;
 
 namespace IncidentManagement.Data
 {
-    public class IncidentDbContext : DbContext
+    public partial class IncidentDbContext : DbContext
     {
+        partial void SeedSolutionsAndTips(ModelBuilder modelBuilder);
+
         public IncidentDbContext(DbContextOptions<IncidentDbContext> options) : base(options) { }
 
         public DbSet<Incident> Incidents => Set<Incident>();
@@ -54,29 +56,14 @@ namespace IncidentManagement.Data
                  .WithOne(s => s.Issue)
                  .HasForeignKey(s => s.IssueId)
                  .OnDelete(DeleteBehavior.Cascade);
-
-                e.HasData(
-                    new Issue { IssueId = 1, Name = "Online Account", IsActive = true },
-                    new Issue { IssueId = 2, Name = "Payment", IsActive = true },
-                    new Issue { IssueId = 3, Name = "Credit Score", IsActive = true },
-                    new Issue { IssueId = 4, Name = "Loan Inquiry", IsActive = true }
-                );
             });
 
             modelBuilder.Entity<Solution>(e =>
             {
-                e.HasData(
-                    new Solution { SolutionId = 1, IssueId = 1, Name = "Reset Password", IsActive = true },
-                    new Solution { SolutionId = 2, IssueId = 1, Name = "Unlock Account", IsActive = true },
-                    new Solution { SolutionId = 3, IssueId = 1, Name = "Update Email", IsActive = true },
-                    new Solution { SolutionId = 4, IssueId = 2, Name = "Change Payment Method", IsActive = true },
-                    new Solution { SolutionId = 5, IssueId = 2, Name = "Payment Extension", IsActive = true },
-                    new Solution { SolutionId = 6, IssueId = 2, Name = "Payment Reversal", IsActive = true },
-                    new Solution { SolutionId = 7, IssueId = 3, Name = "Request Credit Report", IsActive = true },
-                    new Solution { SolutionId = 8, IssueId = 3, Name = "Dispute Credit Score", IsActive = true },
-                    new Solution { SolutionId = 9, IssueId = 4, Name = "Payoff Quote", IsActive = true },
-                    new Solution { SolutionId = 10, IssueId = 4, Name = "Refinance Information", IsActive = true }
-                );
+                e.HasOne(s => s.Issue)
+                .WithMany(i => i.Solutions)
+                .HasForeignKey(s => s.IssueId)
+                .OnDelete(DeleteBehavior.Cascade);
             });
 
             modelBuilder.Entity<CallTip>(e =>
@@ -86,32 +73,6 @@ namespace IncidentManagement.Data
                 .WithMany()
                 .HasForeignKey(t => t.IssueId)
                 .OnDelete(DeleteBehavior.Cascade);
-
-                e.HasData(
-                    // Online Account (IssueId: 1)
-                    new CallTip { TipId = 1, IssueId = 1, Tip = "Verify the customer's identity before making any account changes — ask for full name, SSN last 4, and date of birth.", SortOrder = 1 },
-                    new CallTip { TipId = 2, IssueId = 1, Tip = "If the customer is locked out, confirm whether they are using the correct username/email before resetting.", SortOrder = 2 },
-                    new CallTip { TipId = 3, IssueId = 1, Tip = "For password resets, remind the customer the link expires in 24 hours and to check their spam folder.", SortOrder = 3 },
-                    new CallTip { TipId = 4, IssueId = 1, Tip = "If the customer reports unauthorized access, escalate immediately to a supervisor.", SortOrder = 4 },
-
-                    // Payment (IssueId: 2)
-                    new CallTip { TipId = 5, IssueId = 2, Tip = "Confirm the payment amount and due date before processing any changes.", SortOrder = 1 },
-                    new CallTip { TipId = 6, IssueId = 2, Tip = "If a payment was returned, ask the customer to verify their bank account and routing number.", SortOrder = 2 },
-                    new CallTip { TipId = 7, IssueId = 2, Tip = "Payment extensions must be approved by a supervisor — do not promise an extension without approval.", SortOrder = 3 },
-                    new CallTip { TipId = 8, IssueId = 2, Tip = "Always confirm the customer's preferred payment method and check if it is on file.", SortOrder = 4 },
-
-                    // Credit Score (IssueId: 3)
-                    new CallTip { TipId = 9,  IssueId = 3, Tip = "Explain that we report to credit bureaus monthly and changes may take 30-60 days to reflect.", SortOrder = 1 },
-                    new CallTip { TipId = 10, IssueId = 3, Tip = "If the customer disputes a credit report item, direct them to dispute through the credit bureau directly.", SortOrder = 2 },
-                    new CallTip { TipId = 11, IssueId = 3, Tip = "Do not make promises about credit score improvements — explain factors that generally affect scores.", SortOrder = 3 },
-                    new CallTip { TipId = 12, IssueId = 3, Tip = "If requesting a credit report, confirm the customer's mailing address is current before sending.", SortOrder = 4 },
-
-                    // Loan Inquiry (IssueId: 4)
-                    new CallTip { TipId = 13, IssueId = 4, Tip = "Verify the customer's current loan balance and payoff amount before discussing refinance options.", SortOrder = 1 },
-                    new CallTip { TipId = 14, IssueId = 4, Tip = "For payoff quotes, remind the customer the quote is valid for 10 days and interest accrues daily.", SortOrder = 2 },
-                    new CallTip { TipId = 15, IssueId = 4, Tip = "Refinance inquiries should be referred to the branch manager — do not quote rates directly.", SortOrder = 3 },
-                    new CallTip { TipId = 16, IssueId = 4, Tip = "If the account is charged off, do not discuss settlement options without supervisor approval.", SortOrder = 4 }
-                );
             });
 
             modelBuilder.Entity<IncidentNote>(e =>
@@ -256,6 +217,8 @@ namespace IncidentManagement.Data
                 new PaymentTransaction { TransactionId = 16, LoanReference = "0202-40002", TransactionDate = new DateTime(2024, 12, 30), TransactionCode = "PA", ConfirmationNumber = "40021002", TransactionAmount = 195.00m, PrincipalApplied = 153.00m, PaidThroughDate = new DateTime(2025, 1, 1),  FeesApplied = 0m },
                 new PaymentTransaction { TransactionId = 17, LoanReference = "0202-40002", TransactionDate = new DateTime(2024, 11, 27), TransactionCode = "PA", ConfirmationNumber = "40021003", TransactionAmount = 195.00m, PrincipalApplied = 151.00m, PaidThroughDate = new DateTime(2024, 12, 1), FeesApplied = 0m }
             );
+
+            SeedSolutionsAndTips(modelBuilder);
         }
     }
 }
